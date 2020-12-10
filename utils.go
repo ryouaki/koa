@@ -1,4 +1,4 @@
-package mkbug
+package koa
 
 // Bytes2String func
 func Bytes2String(bs []uint8) string {

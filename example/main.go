@@ -3,24 +3,24 @@ package main
 import (
 	"fmt"
 
-	"mkbug.go"
+	"koa.go"
 )
 
 func main() {
-	app := mkbug.New()
+	app := koa.New()
 
-	app.Use("/", func(err error, ctx *mkbug.Context, next mkbug.NextCb) {
+	app.Use("/", func(err error, ctx *koa.Context, next koa.NextCb) {
 		fmt.Println("test1")
 		next(err)
 		fmt.Println("test1")
 	})
-	app.Use(func(err error, ctx *mkbug.Context, next mkbug.NextCb) {
+	app.Use(func(err error, ctx *koa.Context, next koa.NextCb) {
 		fmt.Println("test1")
 		next(err)
 		fmt.Println("test1")
 	})
 
-	app.Use(func(err error, ctx *mkbug.Context, next mkbug.NextCb) {
+	app.Use(func(err error, ctx *koa.Context, next koa.NextCb) {
 		fmt.Println("test2")
 		next(nil)
 		fmt.Println("test2")

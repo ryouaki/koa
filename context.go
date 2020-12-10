@@ -1,4 +1,4 @@
-package mkbug
+package koa
 
 import "net/http"
 

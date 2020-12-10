@@ -1,4 +1,4 @@
-package mkbug
+package koa
 
 import (
 	"fmt"
@@ -18,7 +18,7 @@ type Handler func(err error, ctx *Context, next NextCb)
 // NextCb Func
 type NextCb func(err error)
 
-// New for a Mkbug instance
+// New for a koa instance
 func New() *Application {
 	return &Application{
 		middlewares: make(map[string]([]Handler)),
