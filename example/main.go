@@ -15,15 +15,15 @@ func main() {
 		fmt.Println("test1")
 	})
 	app.Use(func(err error, ctx *koa.Context, next koa.NextCb) {
-		fmt.Println("test1")
+		fmt.Println("test2")
 		next(err)
-		fmt.Println("test1")
+		fmt.Println("test2")
 	})
 
 	app.Use(func(err error, ctx *koa.Context, next koa.NextCb) {
-		fmt.Println("test2")
+		fmt.Println("test3")
 		next(nil)
-		fmt.Println("test2")
+		fmt.Println("test3")
 	})
 	err := app.Run(8080)
 	if err != nil {
