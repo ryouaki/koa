@@ -6,7 +6,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"reflect"
-	"regexp"
 	"strings"
 	"sync/atomic"
 )
@@ -86,14 +85,14 @@ func (app *Application) appendRouter(method string, path string, cbs []Handler) 
 
 // Get func
 func (app *Application) Get(path string, cbFunc ...Handler) error {
-	routers := app.initRouter("Get")
+	routers := app.initRouter("get")
 	for _, router := range routers {
 		if router.path == path {
-			return errors.New("路由已经存在")
+			return errors.New("Router is exist")
 		}
 	}
 
-	app.appendRouter("Get", path, cbFunc)
+	app.appendRouter("get", path, cbFunc)
 	return nil
 }
 
@@ -115,8 +114,6 @@ func (app *Application) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	var body []uint8 = nil
 
 	method := strings.ToLower(req.Method)
-	// // fullUri := req.RequestURI
-	// // path := req.URL.Path
 
 	if req.Body != nil {
 		body, err = ioutil.ReadAll(req.Body)
@@ -152,38 +149,39 @@ func (app *Application) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 				cb(err, _ctx, next)
 			}
 		}
+
+		if bFound == false {
+			app.runRouterHandler(_ctx)
+		}
 	}
 
 	next(err)
 }
 
-// compare path middleware prefix, target request path
-func compare(path string, target string) bool {
-	if len(path) == 0 || path == "/" {
-		return true
-	}
+func (app *Application) runRouterHandler(ctx *Context) {
+	routers := app.route[ctx.Method]
+	for _, router := range routers {
+		path := router.path
 
-	pathArr := strings.Split(path, "/")
-	targetArr := strings.Split(target, "/")
-	pathLen := len(pathArr)
-	targetLen := len(targetArr)
+		if ok := compare(path, ctx.Path); ok {
+			currentPoint := int32(0)
+			var next func(err error)
+			var cbMax = len(router.handler)
 
-	if pathLen > targetLen {
-		return false
-	}
+			next = func(err error) {
+				_ctx := ctx
+				_router := router.handler
+				bFound := false
 
-	for idx, val := range pathArr {
-		if val != targetArr[idx] {
-			if !strings.HasPrefix(val, ":") {
-				return false
+				for int(currentPoint) < cbMax && bFound == false {
+					bFound = true
+					currRouterHandler := _router[currentPoint]
+					atomic.AddInt32(&currentPoint, 1)
+					currRouterHandler(err, _ctx, next)
+				}
 			}
 
-			variable := strings.TrimPrefix(val, ":")
-			if matched, _ := regexp.MatchString("^[a-zA-Z0-9_-]+$", variable); !matched {
-				return false
-			}
+			next(nil)
 		}
 	}
-
-	return true
 }

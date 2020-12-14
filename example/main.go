@@ -34,6 +34,9 @@ func main() {
 
 	app.Get("/aaa", func(err error, ctx *koa.Context, next koa.NextCb) {
 		fmt.Println("aaa")
+		next(nil)
+	}, func(err error, ctx *koa.Context, next koa.NextCb) {
+		fmt.Println("bbb")
 	})
 	err := app.Run(8080)
 	if err != nil {
