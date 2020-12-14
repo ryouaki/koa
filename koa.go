@@ -1,6 +1,7 @@
 package koa
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -14,12 +15,19 @@ import (
 type Application struct {
 	prefix      string
 	middlewares []MiddlewareHandler
+	route       map[string]([]RouterHandler)
 }
 
 // MiddlewareHandler struct
 type MiddlewareHandler struct {
 	path    string
 	handler Handler
+}
+
+// RouterHandler struct
+type RouterHandler struct {
+	path    string
+	handler []Handler
 }
 
 // Handler Func
@@ -32,6 +40,7 @@ type NextCb func(err error)
 func New() *Application {
 	return &Application{
 		middlewares: make([]MiddlewareHandler, 0, 16),
+		route:       make(map[string]([]RouterHandler)),
 	}
 }
 
@@ -60,9 +69,32 @@ func (app *Application) Use(argus ...interface{}) {
 	}
 }
 
-// Get func
-func (app *Application) Get(path string, cbFunc ...Handler) {
+func (app *Application) initRouter(method string) []RouterHandler {
+	if _, ok := app.route[method]; ok {
+		app.route[method] = make([]RouterHandler, 0, 16)
+	}
 
+	return app.route[method]
+}
+
+func (app *Application) appendRouter(method string, path string, cbs []Handler) {
+	app.route[method] = append(app.route[method], RouterHandler{
+		path:    path,
+		handler: cbs,
+	})
+}
+
+// Get func
+func (app *Application) Get(path string, cbFunc ...Handler) error {
+	routers := app.initRouter("Get")
+	for _, router := range routers {
+		if router.path == path {
+			return errors.New("路由已经存在")
+		}
+	}
+
+	app.appendRouter("Get", path, cbFunc)
+	return nil
 }
 
 // Run func
@@ -123,7 +155,6 @@ func (app *Application) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	}
 
 	next(err)
-
 }
 
 // compare path middleware prefix, target request path
