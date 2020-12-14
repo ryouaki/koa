@@ -9,8 +9,8 @@ type Context struct {
 	Req    *http.Request
 	URL    string
 	Path   string
-	Query  interface{}
-	Params interface{}
+	Query  map[string](string)
+	Params map[string](string)
 	Body   interface{}
 	Method string
 	Status int

@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"reflect"
+	"regexp"
 	"strings"
 	"sync/atomic"
 )
@@ -95,7 +96,6 @@ func (app *Application) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		Req:    req,
 		URL:    req.RequestURI,
 		Path:   req.URL.Path,
-		Query:  req.URL.RawQuery,
 		Body:   body,
 		Method: method,
 		Status: 200,
@@ -114,7 +114,7 @@ func (app *Application) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 			curMiddleware := _middlewares[currentPoint]
 			atomic.AddInt32(&currentPoint, 1)
 
-			if compare(curMiddleware.path, ctx.Path) {
+			if compare(curMiddleware.path, _ctx.Path) {
 				bFound = true
 				cb := curMiddleware.handler
 				cb(err, _ctx, next)
@@ -123,8 +123,36 @@ func (app *Application) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	}
 
 	next(err)
+
 }
 
+// compare path middleware prefix, target request path
 func compare(path string, target string) bool {
+	if len(path) == 0 || path == "/" {
+		return true
+	}
+
+	pathArr := strings.Split(path, "/")
+	targetArr := strings.Split(target, "/")
+	pathLen := len(pathArr)
+	targetLen := len(targetArr)
+
+	if pathLen > targetLen {
+		return false
+	}
+
+	for idx, val := range pathArr {
+		if val != targetArr[idx] {
+			if !strings.HasPrefix(val, ":") {
+				return false
+			}
+
+			variable := strings.TrimPrefix(val, ":")
+			if matched, _ := regexp.MatchString("^[a-zA-Z0-9_-]+$", variable); !matched {
+				return false
+			}
+		}
+	}
+
 	return true
 }

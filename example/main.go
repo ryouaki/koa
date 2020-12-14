@@ -25,6 +25,12 @@ func main() {
 		next(nil)
 		fmt.Println("test3")
 	})
+
+	app.Use("/aaa", func(err error, ctx *koa.Context, next koa.NextCb) {
+		fmt.Println("test4")
+		next(nil)
+		fmt.Println("test4")
+	})
 	err := app.Run(8080)
 	if err != nil {
 		fmt.Println(err)
