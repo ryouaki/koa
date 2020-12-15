@@ -3,6 +3,7 @@ package koa
 import (
 	"regexp"
 	"strings"
+	"sync/atomic"
 )
 
 // Bytes2String func
@@ -43,4 +44,25 @@ func compare(path string, target string) bool {
 	}
 
 	return true
+}
+
+func compose(ctx *Context, handlers []Handler) func(error) {
+	currentPoint := int32(0)
+	var next func(err error)
+	var cbMax = len(handlers)
+
+	next = func(err error) {
+		_ctx := ctx
+		_router := handlers
+		bFound := false
+
+		for int(currentPoint) < cbMax && bFound == false {
+			bFound = true
+			currRouterHandler := _router[currentPoint]
+			atomic.AddInt32(&currentPoint, 1)
+			currRouterHandler(err, _ctx, next)
+		}
+	}
+
+	return next
 }

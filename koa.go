@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"reflect"
 	"strings"
-	"sync/atomic"
 )
 
 // Application Object
@@ -130,58 +129,19 @@ func (app *Application) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		Status: 200,
 	}
 
-	currentPoint := int32(0)
-	var next func(err error)
-	var cbMax = len(app.middlewares)
-
-	next = func(err error) {
-		_ctx := ctx
-		_middlewares := app.middlewares
-		bFound := false
-
-		for int(currentPoint) < cbMax && bFound == false {
-			curMiddleware := _middlewares[currentPoint]
-			atomic.AddInt32(&currentPoint, 1)
-
-			if compare(curMiddleware.path, _ctx.Path) {
-				bFound = true
-				cb := curMiddleware.handler
-				cb(err, _ctx, next)
-			}
-		}
-
-		if bFound == false {
-			app.runRouterHandler(_ctx)
+	var routerHandler []Handler
+	for _, middleware := range app.middlewares {
+		if ok := compare(middleware.path, ctx.Path); ok {
+			routerHandler = append(routerHandler, middleware.handler)
 		}
 	}
 
-	next(err)
-}
-
-func (app *Application) runRouterHandler(ctx *Context) {
-	routers := app.route[ctx.Method]
-	for _, router := range routers {
-		path := router.path
-
-		if ok := compare(path, ctx.Path); ok {
-			currentPoint := int32(0)
-			var next func(err error)
-			var cbMax = len(router.handler)
-
-			next = func(err error) {
-				_ctx := ctx
-				_router := router.handler
-				bFound := false
-
-				for int(currentPoint) < cbMax && bFound == false {
-					bFound = true
-					currRouterHandler := _router[currentPoint]
-					atomic.AddInt32(&currentPoint, 1)
-					currRouterHandler(err, _ctx, next)
-				}
-			}
-
-			next(nil)
+	for _, router := range app.route[ctx.Method] {
+		if ok := compare(router.path, ctx.Path); ok {
+			routerHandler = append(routerHandler, router.handler...)
 		}
 	}
+
+	fb := compose(ctx, routerHandler)
+	fb(err)
 }
