@@ -75,23 +75,62 @@ func (app *Application) initRouter(method string) []RouterHandler {
 	return app.route[method]
 }
 
-func (app *Application) appendRouter(method string, path string, cbs []Handler) {
-	app.route[method] = append(app.route[method], RouterHandler{
-		path:    path,
-		handler: cbs,
-	})
-}
+func (app *Application) appendRouter(method string, path string, cbs []Handler) error {
+	routers := app.initRouter(method)
 
-// Get func
-func (app *Application) Get(path string, cbFunc ...Handler) error {
-	routers := app.initRouter("get")
 	for _, router := range routers {
 		if router.path == path {
 			return errors.New("Router is exist")
 		}
 	}
 
+	app.route[method] = append(app.route[method], RouterHandler{
+		path:    path,
+		handler: cbs,
+	})
+
+	return nil
+}
+
+// Get func
+func (app *Application) Get(path string, cbFunc ...Handler) error {
 	app.appendRouter("get", path, cbFunc)
+	return nil
+}
+
+// Post func
+func (app *Application) Post(path string, cbFunc ...Handler) error {
+	app.appendRouter("post", path, cbFunc)
+	return nil
+}
+
+// Delete func
+func (app *Application) Delete(path string, cbFunc ...Handler) error {
+	app.appendRouter("delete", path, cbFunc)
+	return nil
+}
+
+// Patch func
+func (app *Application) Patch(path string, cbFunc ...Handler) error {
+	app.appendRouter("patch", path, cbFunc)
+	return nil
+}
+
+// Put func
+func (app *Application) Put(path string, cbFunc ...Handler) error {
+	app.appendRouter("put", path, cbFunc)
+	return nil
+}
+
+// Options func
+func (app *Application) Options(path string, cbFunc ...Handler) error {
+	app.appendRouter("options", path, cbFunc)
+	return nil
+}
+
+// Head func
+func (app *Application) Head(path string, cbFunc ...Handler) error {
+	app.appendRouter("head", path, cbFunc)
 	return nil
 }
 
