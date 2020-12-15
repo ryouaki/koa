@@ -4,16 +4,17 @@ import "net/http"
 
 // Context Request
 type Context struct {
-	Header map[string]([]string)
-	Res    http.ResponseWriter
-	Req    *http.Request
-	URL    string
-	Path   string
-	Query  map[string](string)
-	Params map[string](string)
-	Body   interface{}
-	Method string
-	Status int
+	Header   map[string]([]string)
+	Res      http.ResponseWriter
+	Req      *http.Request
+	URL      string
+	Path     string
+	Query    map[string](string)
+	Params   map[string](string)
+	Method   string
+	Status   int
+	MatchURL string
+	Body     []uint8
 }
 
 // Get func

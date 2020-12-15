@@ -16,7 +16,7 @@ func Bytes2String(bs []uint8) string {
 }
 
 // compare path middleware prefix, target request path
-func compare(path string, target string) bool {
+func compare(path string, target string, isRouter bool) bool {
 	if len(path) == 0 || path == "/" {
 		return true
 	}
@@ -27,6 +27,10 @@ func compare(path string, target string) bool {
 	targetLen := len(targetArr)
 
 	if pathLen > targetLen {
+		return false
+	}
+
+	if isRouter && pathLen != targetLen {
 		return false
 	}
 

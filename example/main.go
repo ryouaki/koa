@@ -32,7 +32,7 @@ func main() {
 		fmt.Println("test4")
 	})
 
-	app.Get("/aaa", func(err error, ctx *koa.Context, next koa.NextCb) {
+	app.Get("/aaa/:c/a", func(err error, ctx *koa.Context, next koa.NextCb) {
 		fmt.Println("aaa")
 		next(nil)
 	}, func(err error, ctx *koa.Context, next koa.NextCb) {

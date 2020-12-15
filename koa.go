@@ -170,13 +170,14 @@ func (app *Application) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 
 	var routerHandler []Handler
 	for _, middleware := range app.middlewares {
-		if ok := compare(middleware.path, ctx.Path); ok {
+		if ok := compare(middleware.path, ctx.Path, false); ok {
 			routerHandler = append(routerHandler, middleware.handler)
 		}
 	}
 
 	for _, router := range app.route[ctx.Method] {
-		if ok := compare(router.path, ctx.Path); ok {
+		if ok := compare(router.path, ctx.Path, true); ok {
+			ctx.MatchURL = router.path
 			routerHandler = append(routerHandler, router.handler...)
 		}
 	}
