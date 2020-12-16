@@ -33,10 +33,11 @@ func main() {
 	})
 
 	app.Get("/aaa/:c/a", func(err error, ctx *koa.Context, next koa.NextCb) {
-		fmt.Println("aaa")
+		fmt.Println("aaa", ctx.Query["a"][0])
 		next(nil)
 	}, func(err error, ctx *koa.Context, next koa.NextCb) {
 		fmt.Println("bbb")
+		ctx.Write([]byte("Hello World"))
 	})
 	err := app.Run(8080)
 	if err != nil {

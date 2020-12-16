@@ -70,3 +70,29 @@ func compose(ctx *Context, handlers []Handler) func(error) {
 
 	return next
 }
+
+func formatQuery(values map[string]([]string)) map[string]([]string) {
+	result := make(map[string]([]string))
+	for key, data := range values {
+		if strings.HasSuffix(key, "[]") {
+			key = strings.Replace(key, "[]", "", -1)
+		}
+		result[key] = data
+	}
+	return result
+}
+
+func formatParams(path string, target string) map[string]string {
+	result := make(map[string]string)
+	pathArr := strings.Split(path, "/")
+	targetArr := strings.Split(target, "/")
+
+	for idx, val := range pathArr {
+		if val != targetArr[idx] {
+			variable := strings.TrimPrefix(val, ":")
+			result[variable] = targetArr[idx]
+		}
+	}
+
+	return result
+}

@@ -158,14 +158,16 @@ func (app *Application) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	}
 
 	ctx := &Context{
-		Header: req.Header,
-		Res:    w,
-		Req:    req,
-		URL:    req.RequestURI,
-		Path:   req.URL.Path,
-		Body:   body,
-		Method: method,
-		Status: 200,
+		Header:   req.Header,
+		Res:      w,
+		Req:      req,
+		URL:      req.RequestURI,
+		Path:     req.URL.Path,
+		Query:    formatQuery(req.URL.Query()),
+		Body:     body,
+		Method:   method,
+		Status:   200,
+		IsFinish: false,
 	}
 
 	var routerHandler []Handler
@@ -178,6 +180,7 @@ func (app *Application) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	for _, router := range app.route[ctx.Method] {
 		if ok := compare(router.path, ctx.Path, true); ok {
 			ctx.MatchURL = router.path
+			ctx.Params = formatParams(router.path, ctx.Path)
 			routerHandler = append(routerHandler, router.handler...)
 		}
 	}

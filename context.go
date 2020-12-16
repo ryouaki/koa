@@ -1,6 +1,9 @@
 package koa
 
-import "net/http"
+import (
+	"errors"
+	"net/http"
+)
 
 // Context Request
 type Context struct {
@@ -9,25 +12,43 @@ type Context struct {
 	Req      *http.Request
 	URL      string
 	Path     string
-	Query    map[string](string)
-	Params   map[string](string)
 	Method   string
 	Status   int
 	MatchURL string
 	Body     []uint8
+	Query    map[string]([]string)
+	Params   map[string](string)
+	IsFinish bool
 }
 
-// Get func
-func (ctx *Context) Get(key string) []string {
-	return ctx.Header[key]
+// GetHeader func
+func (ctx *Context) GetHeader(key string) []string {
+	if data, ok := ctx.Header[key]; ok {
+		return data
+	}
+	return nil
 }
 
-// Set func
-func (ctx *Context) Set(key string, value string) {
+// SetHeader func
+func (ctx *Context) SetHeader(key string, value string) {
 	ctx.Res.Header().Set(key, value)
 }
 
-// IsFinish func
-// func (ctx *Context) IsFinish() bool {
-// 	return ctx.Res.handlerDone == 1
-// }
+func (ctx *Context) Write(data []byte) (int, error) {
+	if ctx.IsFinish {
+		return -1, errors.New("Do not write data to response after sended")
+	}
+
+	ctx.Res.WriteHeader(ctx.Status)
+	code, err := ctx.Res.Write(data)
+
+	if err == nil {
+		ctx.IsFinish = true
+	}
+	return code, err
+}
+
+// IsFinished func
+func (ctx *Context) IsFinished() bool {
+	return ctx.IsFinish == true
+}
