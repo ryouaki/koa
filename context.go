@@ -19,6 +19,7 @@ type Context struct {
 	Query    map[string]([]string)
 	Params   map[string](string)
 	IsFinish bool
+	data     map[string]interface{}
 }
 
 // GetHeader func
@@ -32,6 +33,19 @@ func (ctx *Context) GetHeader(key string) []string {
 // SetHeader func
 func (ctx *Context) SetHeader(key string, value string) {
 	ctx.Res.Header().Set(key, value)
+}
+
+// SetData func
+func (ctx *Context) SetData(key string, value interface{}) {
+	ctx.data[key] = value
+}
+
+// GetData func
+func (ctx *Context) GetData(key string) interface{} {
+	if data, ok := ctx.data[key]; ok {
+		return data
+	}
+	return nil
 }
 
 func (ctx *Context) Write(data []byte) (int, error) {

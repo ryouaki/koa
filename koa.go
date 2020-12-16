@@ -168,6 +168,7 @@ func (app *Application) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		Method:   method,
 		Status:   200,
 		IsFinish: false,
+		data:     make(map[string]interface{}),
 	}
 
 	var routerHandler []Handler
