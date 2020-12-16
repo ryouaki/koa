@@ -4,11 +4,13 @@ import (
 	"fmt"
 
 	"koa.go"
+	"koa.go/example/plugin"
 )
 
 func main() {
 	app := koa.New()
 
+	app.Use(plugin.Duration)
 	app.Use("/", func(err error, ctx *koa.Context, next koa.NextCb) {
 		fmt.Println("test1")
 		next(err)
@@ -18,9 +20,7 @@ func main() {
 		fmt.Println("test2")
 		next(err)
 		fmt.Println("test2")
-	})
-
-	app.Use(func(err error, ctx *koa.Context, next koa.NextCb) {
+	}, func(err error, ctx *koa.Context, next koa.NextCb) {
 		fmt.Println("test3")
 		next(nil)
 		fmt.Println("test3")
