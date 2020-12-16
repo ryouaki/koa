@@ -27,18 +27,13 @@ func main() {
 		fmt.Println("test3")
 	})
 
-	app.Use("/aaa", func(err error, ctx *koa.Context, next koa.NextCb) {
-		fmt.Println("test4")
-		next(nil)
-		fmt.Println("test4")
-	})
-
-	app.Get("/aaa/:c/a", func(err error, ctx *koa.Context, next koa.NextCb) {
-		fmt.Println("aaa", ctx.Query)
+	app.Get("/test/:var/p", func(err error, ctx *koa.Context, next koa.NextCb) {
+		fmt.Println("test", ctx.Params)
 		next(nil)
 	}, func(err error, ctx *koa.Context, next koa.NextCb) {
 		ctx.Write([]byte(ctx.GetData("test").(string)))
 	})
+
 	err := app.Run(8080)
 	if err != nil {
 		fmt.Println(err)
