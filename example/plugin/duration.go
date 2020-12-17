@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"koa.go"
+	"github.com/ryouaki/koa"
 )
 
 // Duration func

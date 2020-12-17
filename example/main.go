@@ -3,8 +3,8 @@ package main
 import (
 	"fmt"
 
-	"koa.go"
-	"koa.go/example/plugin"
+	"github.com/ryouaki/koa"
+	"github.com/ryouaki/koa/example/plugin"
 )
 
 func main() {
