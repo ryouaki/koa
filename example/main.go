@@ -5,14 +5,22 @@ import (
 
 	"github.com/ryouaki/koa"
 	"github.com/ryouaki/koa/example/plugin"
+	"github.com/ryouaki/koa/log"
 )
 
 func main() {
 	app := koa.New()
 
+	log.New(&log.Config{
+		Level:   log.LevelInfo,
+		Mode:    log.LogFile,
+		MaxDays: 1,
+		LogPath: "./../logs",
+	})
 	app.Use(plugin.Duration)
 	app.Use("/", func(err error, ctx *koa.Context, next koa.NextCb) {
 		fmt.Println("test1")
+		log.Info("Request in")
 		next(err)
 		fmt.Println("test1")
 	})
