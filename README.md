@@ -103,3 +103,6 @@
   // 该请求是否已经结束，这个非常重要。一个请求只能由一个地方进行结束。否则无法保证返回内容的可预测性
   func (ctx *Context) IsFinished() bool
 ```
+
+# 组件
+- github.com/ryouaki/koa/log 日志组件。支持控制台输出，文件输出，文件保留日期的设置
