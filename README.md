@@ -94,6 +94,10 @@
   func (ctx *Context) GetHeader(key string) []string 
   // 设置响应的header内容
   func (ctx *Context) SetHeader(key string, value string)
+  // 读取请求中的Cookie
+  func (ctx *Context) GetCookie(key string) *http.Cookie
+  // 设置响应的Cookie
+  func (ctx *Context) SetCookie(cookie *http.Cookie)
   // 向请求上下文中设置数据
   func (ctx *Context) SetData(key string, value interface{})
   // 从请求上下文中读取缓存数据

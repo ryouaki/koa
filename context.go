@@ -35,6 +35,20 @@ func (ctx *Context) SetHeader(key string, value string) {
 	ctx.Res.Header().Set(key, value)
 }
 
+// GetCookie func
+func (ctx *Context) GetCookie(key string) *http.Cookie {
+	cookie, ok := ctx.Req.Cookie(key)
+	if ok != nil {
+		return nil
+	}
+	return cookie
+}
+
+// SetCookie func
+func (ctx *Context) SetCookie(cookie *http.Cookie) {
+	http.SetCookie(ctx.Res, cookie)
+}
+
 // SetData func
 func (ctx *Context) SetData(key string, value interface{}) {
 	ctx.data[key] = value
