@@ -1,12 +1,34 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/ryouaki/koa"
+	"github.com/ryouaki/koa/catch"
 	"github.com/ryouaki/koa/example/plugin"
 	"github.com/ryouaki/koa/log"
 )
+
+func init() {
+	catch.Try(func() interface{} {
+		return "test1"
+	}).Then(func(ret interface{}) {
+		fmt.Println(ret.(string))
+		panic(errors.New("test error"))
+	}).Then(func(ret interface{}) {
+		fmt.Println("不会被执行", ret.(string))
+	}).Catch(func(err interface{}) {
+		fmt.Println(err)
+	}).Catch(func(err interface{}) {
+		panic("test error 2")
+		fmt.Println(err)
+	}).Catch(func(err interface{}) {
+		fmt.Println(err)
+	}).Finally(func() {
+		fmt.Println("end")
+	})
+}
 
 func main() {
 	app := koa.New()

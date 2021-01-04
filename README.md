@@ -109,4 +109,5 @@
 ```
 
 # 组件
-- github.com/ryouaki/koa/log 日志组件。支持控制台输出，文件输出，文件保留日期的设置
+- [github.com/ryouaki/koa/log](https://github.com/ryouaki/koa/blob/main/log/log.md) 日志组件。支持控制台输出，文件输出，文件保留日期的设置
+- [github.com/ryouaki/koa/catch](https://github.com/ryouaki/koa/blob/main/catch/catch.md) 实现了golang捕获异常的try-catch-finally链式调用接口。
