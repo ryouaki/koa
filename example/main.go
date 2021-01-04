@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"fmt"
+	"net/http"
 
 	"github.com/ryouaki/koa"
 	"github.com/ryouaki/koa/catch"
@@ -41,6 +42,10 @@ func main() {
 	})
 	app.Use(plugin.Duration)
 	app.Use("/", func(err error, ctx *koa.Context, next koa.NextCb) {
+		ctx.SetCookie(&http.Cookie{
+			Name:  "test111",
+			Value: "111",
+		})
 		fmt.Println("test1")
 		log.Info("Request in")
 		next(err)
