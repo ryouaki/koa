@@ -46,11 +46,17 @@ func (ctx *Context) GetCookie(key string) *http.Cookie {
 
 // SetCookie func
 func (ctx *Context) SetCookie(cookie *http.Cookie) {
+	if cookie == nil {
+		return
+	}
 	http.SetCookie(ctx.Res, cookie)
 }
 
 // SetData func
 func (ctx *Context) SetData(key string, value interface{}) {
+	if value == nil {
+		return
+	}
 	ctx.data[key] = value
 }
 
