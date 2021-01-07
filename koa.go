@@ -170,6 +170,7 @@ func (app *Application) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		IsFinish: false,
 		data:     make(map[string]interface{}),
 	}
+	ctx.data["session"] = make(map[string]interface{})
 
 	var routerHandler []Handler
 	for _, middleware := range app.middlewares {

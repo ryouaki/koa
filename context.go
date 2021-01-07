@@ -54,7 +54,7 @@ func (ctx *Context) SetCookie(cookie *http.Cookie) {
 
 // SetData func
 func (ctx *Context) SetData(key string, value interface{}) {
-	if value == nil {
+	if value == nil || key == "session" {
 		return
 	}
 	ctx.data[key] = value
@@ -62,8 +62,28 @@ func (ctx *Context) SetData(key string, value interface{}) {
 
 // GetData func
 func (ctx *Context) GetData(key string) interface{} {
+	if key == "session" {
+		return nil
+	}
 	if data, ok := ctx.data[key]; ok {
 		return data
+	}
+	return nil
+}
+
+// SetSession func
+func (ctx *Context) SetSession(key string, value interface{}) {
+	if session, ok := ctx.data["session"]; ok {
+		data := session.(map[string]interface{})
+		data[key] = value
+		ctx.data["session"] = data
+	}
+}
+
+// GetSession func
+func (ctx *Context) GetSession() map[string]interface{} {
+	if session, ok := ctx.data["session"]; ok {
+		return session.(map[string]interface{})
 	}
 	return nil
 }
