@@ -73,7 +73,7 @@ func (ctx *Context) GetData(key string) interface{} {
 
 // SetSession func
 func (ctx *Context) SetSession(key string, value interface{}) {
-	if session, ok := ctx.data["session"]; ok {
+	if session, ok := ctx.data["session"]; ok && value != nil {
 		data := session.(map[string]interface{})
 		data[key] = value
 		ctx.data["session"] = data
