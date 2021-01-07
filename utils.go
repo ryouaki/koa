@@ -1,7 +1,13 @@
 package koa
 
 import (
+	"bytes"
+	"crypto/md5"
+	"encoding/hex"
+	"net"
 	"regexp"
+	"runtime"
+	"strconv"
 	"strings"
 	"sync/atomic"
 )
@@ -95,4 +101,38 @@ func formatParams(path string, target string) map[string]string {
 	}
 
 	return result
+}
+
+// GetIPAddr func
+func GetIPAddr() string {
+	ret := ""
+
+	addrs, err := net.InterfaceAddrs()
+	if err == nil {
+		for _, value := range addrs {
+			if ipnet, ok := value.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
+				if ipnet.IP.To4() != nil {
+					ret += ipnet.IP.String()
+				}
+			}
+		}
+	}
+
+	return ret
+}
+
+// GetGoroutineID func
+func GetGoroutineID() uint64 {
+	b := make([]byte, 64)
+	runtime.Stack(b, false)
+	b = bytes.TrimPrefix(b, []byte("goroutine "))
+	b = b[:bytes.IndexByte(b, ' ')]
+	n, _ := strconv.ParseUint(string(b), 10, 64)
+	return n
+}
+
+// GetMD5ID func
+func GetMD5ID(b []byte) string {
+	res := md5.Sum(b)
+	return hex.EncodeToString(res[:])
 }

@@ -3,12 +3,13 @@ package main
 import (
 	"errors"
 	"fmt"
-	"net/http"
 
+	"github.com/go-redis/redis"
 	"github.com/ryouaki/koa"
 	"github.com/ryouaki/koa/catch"
 	"github.com/ryouaki/koa/example/plugin"
 	"github.com/ryouaki/koa/log"
+	"github.com/ryouaki/koa/session"
 )
 
 func init() {
@@ -41,32 +42,31 @@ func main() {
 		LogPath: "./../logs",
 	})
 	app.Use(plugin.Duration)
-	app.Use("/", func(err error, ctx *koa.Context, next koa.NextCb) {
-		ctx.SetCookie(&http.Cookie{
-			Name:  "test111",
-			Value: "111",
-		})
-		fmt.Println("test1")
-		log.Info("Request in")
-		next(err)
-		fmt.Println("test1")
-	})
-	app.Use(func(err error, ctx *koa.Context, next koa.NextCb) {
-		fmt.Println("test2")
-		next(err)
-		fmt.Println("test2")
-	}, func(err error, ctx *koa.Context, next koa.NextCb) {
-		fmt.Println("test3")
-		ctx.SetData("test", ctx.Query["c"][0])
-		next(nil)
-		fmt.Println("test3")
+	rds := redis.NewUniversalClient(&redis.UniversalOptions{
+		Addrs: []string{"42.192.194.38:6001"},
 	})
 
-	app.Get("/test/:var/p", func(err error, ctx *koa.Context, next koa.NextCb) {
-		fmt.Println("test", ctx.Params)
+	store := session.NewRedisStore(rds)
+	app.Use(session.Session(&session.Config{
+		Store:  store,
+		MaxAge: 100,
+	}))
+
+	// store := session.NewMemStore()
+	// app.Use(session.Session(&session.Config{
+	// 	Store:  store,
+	// 	MaxAge: 1000,
+	// }))
+	app.Use("/a", func(err error, ctx *koa.Context, next koa.NextCb) {
+		ctx.SetSession("test", "kkkk")
 		next(nil)
-	}, func(err error, ctx *koa.Context, next koa.NextCb) {
-		ctx.Write([]byte(ctx.GetData("test").(string)))
+	})
+	app.Get("/", func(err error, ctx *koa.Context, next koa.NextCb) {
+		data := ctx.GetSession()
+		if data["test"] == nil {
+			data["test"] = "nil"
+		}
+		ctx.Write([]byte(data["test"].(string)))
 	})
 
 	err := app.Run(8080)

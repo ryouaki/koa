@@ -102,6 +102,12 @@
   func (ctx *Context) SetData(key string, value interface{})
   // 从请求上下文中读取缓存数据
   func (ctx *Context) GetData(key string) interface{}
+  // 设置session
+  func (ctx *Context) SetSession(key string, value interface{}) 
+  // 更新session
+  func (ctx *Context) UpdateSession(sess map[string]interface{})
+  // 获取session
+  func (ctx *Context) GetSession() map[string]interface{}
   // 设置响应返回内容
   func (ctx *Context) Write(data []byte) (int, error)
   // 该请求是否已经结束，这个非常重要。一个请求只能由一个地方进行结束。否则无法保证返回内容的可预测性
