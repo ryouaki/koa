@@ -80,6 +80,13 @@ func (ctx *Context) SetSession(key string, value interface{}) {
 	}
 }
 
+// UpdateSession func
+func (ctx *Context) UpdateSession(sess map[string]interface{}) {
+	if sess != nil {
+		ctx.data["session"] = sess
+	}
+}
+
 // GetSession func
 func (ctx *Context) GetSession() map[string]interface{} {
 	if session, ok := ctx.data["session"]; ok {
