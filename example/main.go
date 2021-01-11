@@ -61,7 +61,10 @@ func main() {
 		ctx.SetSession("test", "kkkk")
 		next(nil)
 	})
-	app.Get("/", func(err error, ctx *koa.Context, next koa.NextCb) {
+	app.Get("/b", func(err error, ctx *koa.Context, next koa.NextCb) {
+		ctx.Write([]byte("hello"))
+	})
+	app.Get("/c", func(err error, ctx *koa.Context, next koa.NextCb) {
 		data := ctx.GetSession()
 		if data["test"] == nil {
 			data["test"] = "nil"

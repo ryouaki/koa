@@ -68,7 +68,7 @@ func (app *Application) Use(argus ...interface{}) {
 }
 
 func (app *Application) initRouter(method string) []RouterHandler {
-	if _, ok := app.route[method]; ok {
+	if _, ok := app.route[method]; !ok {
 		app.route[method] = make([]RouterHandler, 0, 16)
 	}
 
