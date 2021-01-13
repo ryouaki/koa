@@ -1,49 +1,43 @@
 # koa.go
-这是一款Golang版本的koa框架，完整的实现了koa.js的中间件机制，洋葱模型，错误优先机制，并且提供了一个抽象的ctx.SetData及ctx.GetData可以向下传递数据。
+Expressive HTTP middleware framework for Golang to make web applications and APIs more enjoyable to write like Koa.js for Nodejs. Koa's middleware stack flows in a stack-like manner, allowing you to perform actions downstream then filter and manipulate the response upstream.
 
-## 如何使用
-使用起来极其简单，初始化应用对象，添加中间件，设置路由回调，启动程序
+Koa is not bundled with any middleware.
 
+[中文](README_CN.md)
+
+## Installation
+```go
+  $ go get github.com/ryouaki/koa
+```
+
+## Hello Koa
 ```go
   package main
 
-  import "github.com/ryouaki/koa.go"
+  import (
+    "fmt"
+
+    "github.com/ryouaki/koa"
+  )
 
   func main() {
     app := koa.New() // 初始化服务对象
 
-    app.Use(plugin.Duration) // 使用中间件，这是一个打印当前请求耗费时长的中间件
-
-    // 自定义中间件，为了验证洋葱模型
-    app.Use(func(err error, ctx *koa.Context, next koa.NextCb) {
-      fmt.Println("test2")
-      next(err) // 中间件必须显式调用next使请求进入下一个处理
-      fmt.Println("test2")
-    }, func(err error, ctx *koa.Context, next koa.NextCb) {
-      fmt.Println("test3")
-      // 在数据缓存区设置参数，因为golang无法像js那样动态添加属性，所以需要实现一个map[string]interface{}接口缓存数据
-      ctx.SetData("test", ctx.Query["c"][0])
-      next(nil) // 中间件必须显式调用next使请求进入下一个处理
-      fmt.Println("test3")
-    })
-
     // 设置api路由，其中var为url传参
-    app.Get("/test/:var/p", func(err error, ctx *koa.Context, next koa.NextCb) {
-      fmt.Println("test", ctx.Params) // 打印url参数
-      next(nil) // 执行下一个回调
-    }, func(err error, ctx *koa.Context, next koa.NextCb) {
-      // 将query内的参数回传给客户端
-      ctx.Write([]byte(ctx.GetData("test").(string)))
+    app.Get("/", func(err error, ctx *koa.Context, next koa.NextCb) {
+      ctx.Write([]byte("Hello Koa"))
     })
 
     err := app.Run(8080) // 启动
-    if err != nil { // 是否发生错误
+    if err != nil {      // 是否发生错误
       fmt.Println(err)
     }
   }
 ```
 
-计时中间件的实现
+## Middleware
+Koa is a middleware framework, Here is an example of logger middleware with each of the different functions:
+
 ```go
   package plugin
 
@@ -54,7 +48,7 @@
     "github.com/ryouaki/koa.go"
   )
 
-  // 中间件和路由api接口实现都必须是func (err error, ctx *koa.Context, next koa.NextCb)类型
+  // Log out about the duration for request.
   func Duration(err error, ctx *koa.Context, next koa.NextCb) {
     startTime := time.Now() // 开始计时
     next(nil) // 执行后续操作
@@ -72,49 +66,49 @@
   }
 ```
 
-其中Context提供了多种接口。
+## About Context
 ```go
   type Context struct {
-    Header   map[string]([]string)
-    Res      http.ResponseWriter
-    Req      *http.Request
-    URL      string
-    Path     string
-    Method   string
-    Status   int
-    MatchURL string
-    Body     []uint8
-    Query    map[string]([]string)
-    Params   map[string](string)
-    IsFinish bool
-    data     map[string]interface{}
+    Header   map[string]([]string)  // Header which you get from client
+    Res      http.ResponseWriter    // Res the response object
+    Req      *http.Request          // Req the request object from client
+    URL      string                 // Url
+    Path     string                 // Rqeust path
+    Method   string                 // Method like Get, Post and others
+    Status   int                    // Status you want to let client konw for the request
+    MatchURL string                 // For the router path
+    Body     []uint8                // The body from client
+    Query    map[string]([]string)  // The Query from request's url
+    Params   map[string](string)    // The Params from request's path
+    IsFinish bool                   // One request only can be done by one time
+    data     map[string]interface{} // ...
   }
 
-  // 获取请求中header内容
+  // Get the information from request's header 
   func (ctx *Context) GetHeader(key string) []string 
-  // 设置响应的header内容
+  // Set the information to response's header
   func (ctx *Context) SetHeader(key string, value string)
-  // 读取请求中的Cookie
+  // Get the information from request's cookie 
   func (ctx *Context) GetCookie(key string) *http.Cookie
-  // 设置响应的Cookie
+  // Set the information to response's cookie
   func (ctx *Context) SetCookie(cookie *http.Cookie)
-  // 向请求上下文中设置数据
-  func (ctx *Context) SetData(key string, value interface{})
-  // 从请求上下文中读取缓存数据
+  // Get the information from context
   func (ctx *Context) GetData(key string) interface{}
-  // 设置session
+  // Set the information to context
+  func (ctx *Context) SetData(key string, value interface{})
+  // Set the information to session, but you should use session middleware first
   func (ctx *Context) SetSession(key string, value interface{}) 
-  // 更新session
+  // Update the session, but you should use session middleware first
   func (ctx *Context) UpdateSession(sess map[string]interface{})
-  // 获取session
+  // Get the information from session, but you should use session middleware first
   func (ctx *Context) GetSession() map[string]interface{}
-  // 设置响应返回内容
+  // Send the data for response
   func (ctx *Context) Write(data []byte) (int, error)
-  // 该请求是否已经结束，这个非常重要。一个请求只能由一个地方进行结束。否则无法保证返回内容的可预测性
+  // Check if the response is done, it's very important for middleware.
   func (ctx *Context) IsFinished() bool
 ```
 
-# 组件
-- [github.com/ryouaki/koa/log](https://github.com/ryouaki/koa/blob/main/log/log.md) 日志组件。支持控制台输出，文件输出，文件保留日期的设置
-- [github.com/ryouaki/koa/catch](https://github.com/ryouaki/koa/blob/main/catch/catch.md) 实现了golang捕获异常的try-catch-finally链式调用接口。
-- [github.com/ryouaki/koa/session](https://github.com/ryouaki/koa/blob/main/session/session.md) 用于管理session的中间件，支持内存和redis两种存储模式。
+## Components
+- [github.com/ryouaki/koa/log](https://github.com/ryouaki/koa/blob/main/log/log.md) Logger plugin
+- [github.com/ryouaki/koa/catch](https://github.com/ryouaki/koa/blob/main/catch/catch.md) A library for catch exception like try - then - catch - finally
+- [github.com/ryouaki/koa/session](https://github.com/ryouaki/koa/blob/main/session/session.md) The middleware for session. support two way to save data - memory and redis base on go-redis
