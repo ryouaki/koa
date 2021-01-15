@@ -181,6 +181,7 @@ func (app *Application) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 
 	for _, router := range app.route[ctx.Method] {
 		if ok := compare(router.path, ctx.Path, true); ok {
+			ctx.RequestNotFound = true
 			ctx.MatchURL = router.path
 			ctx.Params = formatParams(router.path, ctx.Path)
 			routerHandler = append(routerHandler, router.handler...)

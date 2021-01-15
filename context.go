@@ -7,19 +7,20 @@ import (
 
 // Context Request
 type Context struct {
-	Header   map[string]([]string)
-	Res      http.ResponseWriter
-	Req      *http.Request
-	URL      string
-	Path     string
-	Method   string
-	Status   int
-	MatchURL string
-	Body     []uint8
-	Query    map[string]([]string)
-	Params   map[string](string)
-	IsFinish bool
-	data     map[string]interface{}
+	Header          map[string]([]string)
+	Res             http.ResponseWriter
+	Req             *http.Request
+	URL             string
+	Path            string
+	Method          string
+	Status          int
+	MatchURL        string
+	Body            []uint8
+	Query           map[string]([]string)
+	Params          map[string](string)
+	IsFinish        bool
+	RequestNotFound bool
+	data            map[string]interface{}
 }
 
 // GetHeader func
