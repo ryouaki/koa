@@ -158,17 +158,18 @@ func (app *Application) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	}
 
 	ctx := &Context{
-		Header:   req.Header,
-		Res:      w,
-		Req:      req,
-		URL:      req.RequestURI,
-		Path:     req.URL.Path,
-		Query:    formatQuery(req.URL.Query()),
-		Body:     body,
-		Method:   method,
-		Status:   200,
-		IsFinish: false,
-		data:     make(map[string]interface{}),
+		Header:          req.Header,
+		Res:             w,
+		Req:             req,
+		URL:             req.RequestURI,
+		Path:            req.URL.Path,
+		Query:           formatQuery(req.URL.Query()),
+		Body:            body,
+		Method:          method,
+		Status:          200,
+		IsFinish:        false,
+		RequestNotFound: true,
+		data:            make(map[string]interface{}),
 	}
 	ctx.data["session"] = make(map[string]interface{})
 
@@ -181,7 +182,7 @@ func (app *Application) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 
 	for _, router := range app.route[ctx.Method] {
 		if ok := compare(router.path, ctx.Path, true); ok {
-			ctx.RequestNotFound = true
+			ctx.RequestNotFound = false
 			ctx.MatchURL = router.path
 			ctx.Params = formatParams(router.path, ctx.Path)
 			routerHandler = append(routerHandler, router.handler...)
