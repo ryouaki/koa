@@ -133,9 +133,14 @@ func Session(conf *Config) func(error, *koa.Context, koa.NextCb) {
 	addr := koa.GetIPAddr()
 	id := koa.GetGoroutineID()
 	name := "koa_sess_id"
+	path := "/"
 
 	if conf.Name != "" {
 		name = conf.Name
+	}
+
+	if conf.Path != "" {
+		path = conf.Path
 	}
 
 	sess = &KoaSession{
@@ -144,7 +149,7 @@ func Session(conf *Config) func(error, *koa.Context, koa.NextCb) {
 		Config: Config{
 			Store:      conf.Store,
 			Name:       name,
-			Path:       conf.Path,
+			Path:       path,
 			Domain:     conf.Domain,
 			Expires:    conf.Expires,
 			RawExpires: conf.RawExpires,
@@ -168,10 +173,10 @@ func Session(conf *Config) func(error, *koa.Context, koa.NextCb) {
 		if sessionData != nil {
 			ctx.UpdateSession(sessionData)
 		} else {
-			ctx.SetCookie(&http.Cookie{
-				Name:  sess.Name,
-				Value: sessID,
-			})
+			cookie := &http.Cookie{}
+			koa.StructAssign(cookie, &sess.Config)
+			cookie.Value = sessID
+			ctx.SetCookie(cookie)
 		}
 		next(err)
 		sessionData = ctx.GetSession()

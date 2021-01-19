@@ -5,6 +5,7 @@ import (
 	"crypto/md5"
 	"encoding/hex"
 	"net"
+	"reflect"
 	"regexp"
 	"runtime"
 	"strconv"
@@ -135,4 +136,17 @@ func GetGoroutineID() uint64 {
 func GetMD5ID(b []byte) string {
 	res := md5.Sum(b)
 	return hex.EncodeToString(res[:])
+}
+
+// StructAssign func
+func StructAssign(binding interface{}, value interface{}) {
+	bVal := reflect.ValueOf(binding).Elem()
+	vVal := reflect.ValueOf(value).Elem()
+	vTypeOfT := vVal.Type()
+	for i := 0; i < vVal.NumField(); i++ {
+		name := vTypeOfT.Field(i).Name
+		if ok := bVal.FieldByName(name).IsValid(); ok {
+			bVal.FieldByName(name).Set(reflect.ValueOf(vVal.Field(i).Interface()))
+		}
+	}
 }
