@@ -1,5 +1,5 @@
 # koa.go
-Expressive HTTP middleware framework for Golang to make web applications and APIs more enjoyable to write like Koa.js for Nodejs. Koa's middleware stack flows in a stack-like manner, allowing you to perform actions downstream then filter and manipulate the response upstream.
+Expressive HTTP middleware framework for Golang to make web applications and APIs more enjoyable to write like Koa.js. Koa's middleware stack flows in a stack-like manner, allowing you to perform actions downstream then filter and manipulate the response upstream.
 
 Koa is not bundled with any middleware.
 
