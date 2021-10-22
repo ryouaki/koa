@@ -45,7 +45,7 @@ Koa is a middleware framework, Here is an example of logger middleware with each
     "fmt"
     "time"
 
-    "github.com/ryouaki/koa.go"
+    "github.com/ryouaki/koa"
   )
 
   // Log out about the duration for request.
