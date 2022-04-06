@@ -106,6 +106,8 @@ Koa is a middleware framework, Here is an example of logger middleware with each
   func (ctx *Context) Write(data []byte) (int, error)
   // Check if the response is done, it's very important for middleware.
   func (ctx *Context) IsFinished() bool
+  // End only with status code
+  func (ctx *Context) Done(status int) (int, error)
 ```
 
 ## Components
