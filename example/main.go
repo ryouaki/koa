@@ -10,6 +10,7 @@ import (
 	"github.com/ryouaki/koa/example/plugin"
 	"github.com/ryouaki/koa/log"
 	"github.com/ryouaki/koa/session"
+	"github.com/ryouaki/koa/static"
 )
 
 func init() {
@@ -57,6 +58,7 @@ func main() {
 	// 	Store:  store,
 	// 	MaxAge: 1000,
 	// }))
+	app.Use(static.Static("./static", "/static/"))
 	app.Use("/a", func(err error, ctx *koa.Context, next koa.NextCb) {
 		ctx.SetSession("test", "kkkk")
 		next(nil)

@@ -98,7 +98,7 @@ func (ctx *Context) GetSession() map[string]interface{} {
 
 func (ctx *Context) Write(data []byte) (int, error) {
 	if ctx.IsFinish {
-		return -1, errors.New("Do not write data to response after sended")
+		return -1, errors.New("do not write data to response after sended")
 	}
 
 	ctx.Res.WriteHeader(ctx.Status)
@@ -112,5 +112,17 @@ func (ctx *Context) Write(data []byte) (int, error) {
 
 // IsFinished func
 func (ctx *Context) IsFinished() bool {
-	return ctx.IsFinish == true
+	return ctx.IsFinish
+}
+
+// Done func
+func (ctx *Context) Done(status int) (int, error) {
+	if ctx.IsFinish {
+		return -1, errors.New("do not write data to response after sended")
+	}
+
+	ctx.Res.WriteHeader(status)
+	code, err := ctx.Res.Write([]byte(""))
+
+	return code, err
 }
