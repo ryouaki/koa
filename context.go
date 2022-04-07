@@ -91,18 +91,9 @@ func (ctx *Context) GetData(key string) interface{} {
 	return nil
 }
 
-func (ctx *Context) Write(data []byte) (int, error) {
-	if ctx.isFinish {
-		return -1, errors.New("do not write data to response after sended")
-	}
-
-	ctx.Res.WriteHeader(ctx.Status)
-	code, err := ctx.Res.Write(data)
-
-	if err == nil {
-		ctx.isFinish = true
-	}
-	return code, err
+// Set data for response
+func (ctx *Context) SetBody(data []byte) {
+	ctx.body = data
 }
 
 // IsFinished func
@@ -118,6 +109,10 @@ func (ctx *Context) Done(status int) (int, error) {
 
 	ctx.Res.WriteHeader(status)
 	code, err := ctx.Res.Write([]byte(""))
+
+	if err == nil {
+		ctx.isFinish = true
+	}
 
 	return code, err
 }

@@ -1,6 +1,7 @@
 package koa
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"reflect"
@@ -12,8 +13,9 @@ type Application struct {
 }
 
 type Handle struct {
-	Url     string
-	Handler []Handler
+	url     string
+	method  string
+	handler []Handler
 }
 
 // Handler Func
@@ -40,77 +42,50 @@ func (app *Application) Use(argus ...interface{}) {
 		return
 	}
 
-	_url := "/"
+	_url := ""
 	if reflect.TypeOf(argus[0]).String() == "string" {
 		_url = reflect.ValueOf(argus[0]).String()
 	}
 
 	_handle := Handle{
-		Url:     _url,
-		Handler: make([]Handler, 0, 8),
+		url:     _url,
+		method:  "Use",
+		handler: make([]Handler, 0, 8),
 	}
 
 	for i := 1; i < len(argus); i++ {
 		_fb := argus[i]
-		_handle.Handler = append(_handle.Handler, _fb.(Handler))
+		_handle.handler = append(_handle.handler, _fb.(Handler))
 	}
+
+	app.handles = append(app.handles, _handle)
 }
 
-// // Use func
-// func (app *Application) Use(argus ...interface{}) {
-// 	if len(argus) <= 0 {
-// 		return
-// 	}
+// Get func
+func (app *Application) Get(path string, cbFunc ...Handler) error {
+	app.appendRouter("Get", path, cbFunc)
+	return nil
+}
 
-// 	var firstArgu string
+func (app *Application) appendRouter(method string, path string, cbs []Handler) error {
+	for _, handle := range app.handles {
+		if handle.url == path && handle.method == method {
+			return errors.New("router is exist")
+		}
+	}
 
-// 	var middleware []interface{}
-// 	if reflect.TypeOf(argus[0]).String() == "string" {
-// 		firstArgu = reflect.ValueOf(argus[0]).String()
-// 		middleware = argus[1:]
-// 	} else {
-// 		firstArgu = "/"
-// 		middleware = argus
-// 	}
+	_handle := Handle{
+		url:     path,
+		method:  method,
+		handler: make([]Handler, 0, 8),
+	}
 
-// 	for _, fb := range middleware {
-// 		app.middlewares = append(app.middlewares, MiddlewareHandler{
-// 			path:    firstArgu,
-// 			handler: fb.(func(error, *Context, NextCb)),
-// 		})
-// 	}
-// }
+	_handle.handler = append(_handle.handler, cbs...)
 
-// func (app *Application) initRouter(method string) []RouterHandler {
-// 	if _, ok := app.route[method]; !ok {
-// 		app.route[method] = make([]RouterHandler, 0, 16)
-// 	}
+	app.handles = append(app.handles, _handle)
 
-// 	return app.route[method]
-// }
-
-// func (app *Application) appendRouter(method string, path string, cbs []Handler) error {
-// 	routers := app.initRouter(method)
-
-// 	for _, router := range routers {
-// 		if router.path == path {
-// 			return errors.New("Router is exist")
-// 		}
-// 	}
-
-// 	app.route[method] = append(app.route[method], RouterHandler{
-// 		path:    path,
-// 		handler: cbs,
-// 	})
-
-// 	return nil
-// }
-
-// // Get func
-// func (app *Application) Get(path string, cbFunc ...Handler) error {
-// 	app.appendRouter("get", path, cbFunc)
-// 	return nil
-// }
+	return nil
+}
 
 // // Post func
 // func (app *Application) Post(path string, cbFunc ...Handler) error {

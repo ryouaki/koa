@@ -70,8 +70,8 @@ func main() {
 	// 	ctx.Write([]byte(data["test"].(string)))
 	// })
 
-	// err := app.Run(8080)
-	// if err != nil {
-	// 	fmt.Println(err)
-	// }
+	err := app.Run(8080)
+	if err != nil {
+		fmt.Println(err)
+	}
 }
