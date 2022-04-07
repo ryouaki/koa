@@ -4,12 +4,10 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/go-redis/redis"
 	"github.com/ryouaki/koa"
 	"github.com/ryouaki/koa/catch"
 	"github.com/ryouaki/koa/example/plugin"
 	"github.com/ryouaki/koa/log"
-	"github.com/ryouaki/koa/session"
 	"github.com/ryouaki/koa/static"
 )
 
@@ -43,15 +41,15 @@ func main() {
 		LogPath: "./../logs",
 	})
 	app.Use(plugin.Duration)
-	rds := redis.NewUniversalClient(&redis.UniversalOptions{
-		Addrs: []string{"42.192.194.38:6001"},
-	})
+	// rds := redis.NewUniversalClient(&redis.UniversalOptions{
+	// 	Addrs: []string{"42.192.194.38:6001"},
+	// })
 
-	store := session.NewRedisStore(rds)
-	app.Use(session.Session(&session.Config{
-		Store:  store,
-		MaxAge: 100,
-	}))
+	// store := session.NewRedisStore(rds)
+	// app.Use(session.Session(&session.Config{
+	// 	Store:  store,
+	// 	MaxAge: 100,
+	// }))
 
 	// store := session.NewMemStore()
 	// app.Use(session.Session(&session.Config{
