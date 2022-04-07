@@ -61,12 +61,6 @@ func (app *Application) Use(argus ...interface{}) {
 	app.handles = append(app.handles, _handle)
 }
 
-// Get func
-func (app *Application) Get(path string, cbFunc ...Handler) error {
-	app.appendRouter("Get", path, cbFunc)
-	return nil
-}
-
 func (app *Application) appendRouter(method string, path string, cbs []Handler) error {
 	for _, handle := range app.handles {
 		if handle.url == path && handle.method == method {
@@ -87,41 +81,47 @@ func (app *Application) appendRouter(method string, path string, cbs []Handler) 
 	return nil
 }
 
-// // Post func
-// func (app *Application) Post(path string, cbFunc ...Handler) error {
-// 	app.appendRouter("post", path, cbFunc)
-// 	return nil
-// }
+// Get func
+func (app *Application) Get(path string, cbFunc ...Handler) error {
+	app.appendRouter("Get", path, cbFunc)
+	return nil
+}
 
-// // Delete func
-// func (app *Application) Delete(path string, cbFunc ...Handler) error {
-// 	app.appendRouter("delete", path, cbFunc)
-// 	return nil
-// }
+// Post func
+func (app *Application) Post(path string, cbFunc ...Handler) error {
+	app.appendRouter("Post", path, cbFunc)
+	return nil
+}
 
-// // Patch func
-// func (app *Application) Patch(path string, cbFunc ...Handler) error {
-// 	app.appendRouter("patch", path, cbFunc)
-// 	return nil
-// }
+// Delete func
+func (app *Application) Delete(path string, cbFunc ...Handler) error {
+	app.appendRouter("Delete", path, cbFunc)
+	return nil
+}
 
-// // Put func
-// func (app *Application) Put(path string, cbFunc ...Handler) error {
-// 	app.appendRouter("put", path, cbFunc)
-// 	return nil
-// }
+// Patch func
+func (app *Application) Patch(path string, cbFunc ...Handler) error {
+	app.appendRouter("Patch", path, cbFunc)
+	return nil
+}
 
-// // Options func
-// func (app *Application) Options(path string, cbFunc ...Handler) error {
-// 	app.appendRouter("options", path, cbFunc)
-// 	return nil
-// }
+// Put func
+func (app *Application) Put(path string, cbFunc ...Handler) error {
+	app.appendRouter("Put", path, cbFunc)
+	return nil
+}
 
-// // Head func
-// func (app *Application) Head(path string, cbFunc ...Handler) error {
-// 	app.appendRouter("head", path, cbFunc)
-// 	return nil
-// }
+// Options func
+func (app *Application) Options(path string, cbFunc ...Handler) error {
+	app.appendRouter("Options", path, cbFunc)
+	return nil
+}
+
+// Head func
+func (app *Application) Head(path string, cbFunc ...Handler) error {
+	app.appendRouter("Head", path, cbFunc)
+	return nil
+}
 
 // Run func
 func (app *Application) Run(port int) error {
@@ -129,11 +129,11 @@ func (app *Application) Run(port int) error {
 	return http.ListenAndServe(addr, app)
 }
 
-// // RunTLS func
-// func (app *Application) RunTLS(port int, certFile string, keyFile string) error {
-// 	addr := fmt.Sprintf(":%d", port)
-// 	return http.ListenAndServeTLS(addr, certFile, keyFile, app)
-// }
+// RunTLS func
+func (app *Application) RunTLS(port int, certFile string, keyFile string) error {
+	addr := fmt.Sprintf(":%d", port)
+	return http.ListenAndServeTLS(addr, certFile, keyFile, app)
+}
 
 // ServeHTTP interface func
 func (app *Application) ServeHTTP(w http.ResponseWriter, req *http.Request) {
