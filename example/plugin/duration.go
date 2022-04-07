@@ -8,7 +8,7 @@ import (
 )
 
 // Duration func
-func Duration(err error, ctx *koa.Context, next koa.NextCb) {
+func Duration(err error, ctx *koa.Context, next koa.Next) {
 	startTime := time.Now()
 	next(nil)
 	d := time.Now().Sub(startTime)

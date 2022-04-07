@@ -7,8 +7,6 @@ import (
 	"github.com/ryouaki/koa"
 	"github.com/ryouaki/koa/catch"
 	"github.com/ryouaki/koa/example/plugin"
-	"github.com/ryouaki/koa/log"
-	"github.com/ryouaki/koa/static"
 )
 
 func init() {
@@ -34,46 +32,46 @@ func init() {
 func main() {
 	app := koa.New()
 
-	log.New(&log.Config{
-		Level:   log.LevelInfo,
-		Mode:    log.LogFile,
-		MaxDays: 1,
-		LogPath: "./../logs",
-	})
+	// log.New(&log.Config{
+	// 	Level:   log.LevelInfo,
+	// 	Mode:    log.LogFile,
+	// 	MaxDays: 1,
+	// 	LogPath: "./../logs",
+	// })
 	app.Use(plugin.Duration)
 	// rds := redis.NewUniversalClient(&redis.UniversalOptions{
 	// 	Addrs: []string{"42.192.194.38:6001"},
 	// })
 
-	// store := session.NewRedisStore(rds)
-	// app.Use(session.Session(&session.Config{
-	// 	Store:  store,
-	// 	MaxAge: 100,
-	// }))
+	// // store := session.NewRedisStore(rds)
+	// // app.Use(session.Session(&session.Config{
+	// // 	Store:  store,
+	// // 	MaxAge: 100,
+	// // }))
 
-	// store := session.NewMemStore()
-	// app.Use(session.Session(&session.Config{
-	// 	Store:  store,
-	// 	MaxAge: 1000,
-	// }))
-	app.Use(static.Static("./static", "/static/"))
-	app.Use("/a", func(err error, ctx *koa.Context, next koa.NextCb) {
-		ctx.SetSession("test", "kkkk")
-		next(nil)
-	})
-	app.Get("/b", func(err error, ctx *koa.Context, next koa.NextCb) {
-		ctx.Write([]byte("hello"))
-	})
-	app.Get("/c", func(err error, ctx *koa.Context, next koa.NextCb) {
-		data := ctx.GetSession()
-		if data["test"] == nil {
-			data["test"] = "nil"
-		}
-		ctx.Write([]byte(data["test"].(string)))
-	})
+	// // store := session.NewMemStore()
+	// // app.Use(session.Session(&session.Config{
+	// // 	Store:  store,
+	// // 	MaxAge: 1000,
+	// // }))
+	// app.Use(static.Static("./static", "/static/"))
+	// app.Use("/a", func(err error, ctx *koa.Context, next koa.NextCb) {
+	// 	ctx.SetSession("test", "kkkk")
+	// 	next(nil)
+	// })
+	// app.Get("/b", func(err error, ctx *koa.Context, next koa.NextCb) {
+	// 	ctx.Write([]byte("hello"))
+	// })
+	// app.Get("/c", func(err error, ctx *koa.Context, next koa.NextCb) {
+	// 	data := ctx.GetSession()
+	// 	if data["test"] == nil {
+	// 		data["test"] = "nil"
+	// 	}
+	// 	ctx.Write([]byte(data["test"].(string)))
+	// })
 
-	err := app.Run(8080)
-	if err != nil {
-		fmt.Println(err)
-	}
+	// err := app.Run(8080)
+	// if err != nil {
+	// 	fmt.Println(err)
+	// }
 }
