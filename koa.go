@@ -55,7 +55,7 @@ func (app *Application) Use(argus ...interface{}) {
 
 	for i := 1; i < len(argus); i++ {
 		_fb := argus[i]
-		_handle.handler = append(_handle.handler, _fb.(Handler))
+		_handle.handler = append(_handle.handler, _fb.(func(error, *Context, Next)))
 	}
 
 	app.handles = append(app.handles, _handle)

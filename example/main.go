@@ -7,6 +7,7 @@ import (
 	"github.com/ryouaki/koa"
 	"github.com/ryouaki/koa/catch"
 	"github.com/ryouaki/koa/example/plugin"
+	"github.com/ryouaki/koa/static"
 )
 
 func init() {
@@ -54,21 +55,22 @@ func main() {
 	// // 	Store:  store,
 	// // 	MaxAge: 1000,
 	// // }))
-	// app.Use(static.Static("./static", "/static/"))
-	// app.Use("/a", func(err error, ctx *koa.Context, next koa.NextCb) {
-	// 	ctx.SetSession("test", "kkkk")
-	// 	next(nil)
-	// })
-	// app.Get("/b", func(err error, ctx *koa.Context, next koa.NextCb) {
-	// 	ctx.Write([]byte("hello"))
-	// })
-	// app.Get("/c", func(err error, ctx *koa.Context, next koa.NextCb) {
-	// 	data := ctx.GetSession()
-	// 	if data["test"] == nil {
-	// 		data["test"] = "nil"
-	// 	}
-	// 	ctx.Write([]byte(data["test"].(string)))
-	// })
+	app.Use(static.Static("./static", "/static/"))
+	app.Use("/a", func(err error, ctx *koa.Context, next koa.Next) {
+		next(nil)
+	})
+	app.Get("/b", func(err error, ctx *koa.Context, next koa.Next) {
+		next(nil)
+	})
+	app.Get("/c", func(err error, ctx *koa.Context, next koa.Next) {
+		next(nil)
+	})
+
+	app.Get("/d", func(err error, ctx *koa.Context, next koa.Next) {
+		next(nil)
+	}, func(err error, ctx *koa.Context, next koa.Next) {
+		next(nil)
+	})
 
 	err := app.Run(8080)
 	if err != nil {
