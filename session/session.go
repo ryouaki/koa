@@ -168,7 +168,7 @@ func Session(conf *Config) func(error, *koa.Context, koa.Next) {
 		if sessionID != nil {
 			sessID = sessionID.Value
 		}
-		beforeSession, err := sess.Store.Get(sessID)
+		beforeSession, _ := sess.Store.Get(sessID)
 
 		if beforeSession != nil {
 			ctx.SetData("session", beforeSession)
