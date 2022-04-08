@@ -1,7 +1,6 @@
 package koa
 
 import (
-	"errors"
 	"io/ioutil"
 	"net/http"
 	"strings"
@@ -20,7 +19,6 @@ type Context struct {
 	Body     []uint8                // Body from request
 	Query    map[string]([]string)  // Query from request
 	Params   map[string](string)    // Params from request
-	isFinish bool                   // is end
 	data     map[string]interface{} // cache for context
 	body     []byte                 // body for response
 }
@@ -94,25 +92,4 @@ func (ctx *Context) GetData(key string) interface{} {
 // Set data for response
 func (ctx *Context) SetBody(data []byte) {
 	ctx.body = data
-}
-
-// IsFinished func
-func (ctx *Context) IsFinished() bool {
-	return ctx.isFinish
-}
-
-// Done func
-func (ctx *Context) Done(status int) (int, error) {
-	if ctx.isFinish {
-		return -1, errors.New("do not write data to response after sended")
-	}
-
-	ctx.Res.WriteHeader(status)
-	code, err := ctx.Res.Write([]byte(""))
-
-	if err == nil {
-		ctx.isFinish = true
-	}
-
-	return code, err
 }

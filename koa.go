@@ -1,21 +1,23 @@
 package koa
 
 import (
-	"errors"
 	"fmt"
 	"net/http"
 	"reflect"
+	"strings"
 )
 
 // Application Object
 type Application struct {
 	handles []Handle
+	_cb     Handler
 }
 
 type Handle struct {
 	url     string
+	length  int
 	method  string
-	handler []Handler
+	handler Handler
 }
 
 // Handler Func
@@ -23,6 +25,17 @@ type Handler func(err error, ctx *Context, n Next)
 
 // Next Func
 type Next func(err error)
+
+const (
+	GET     = "get"
+	POST    = "post"
+	PUT     = "put"
+	DELETE  = "delete"
+	PATCH   = "patch"
+	OPTIONS = "options"
+	HEAD    = "head"
+	USE     = "use"
+)
 
 // New a Koa instance
 func New() *Application {
@@ -43,94 +56,89 @@ func (app *Application) Use(argus ...interface{}) {
 	}
 
 	_url := ""
+	_cbs := argus
 	if reflect.TypeOf(argus[0]).String() == "string" {
 		_url = reflect.ValueOf(argus[0]).String()
+		_cbs = argus[1:]
 	}
 
-	_handle := Handle{
-		url:     _url,
-		method:  "Use",
-		handler: make([]Handler, 0, 8),
+	var _handlers []Handler
+	for _, v := range _cbs {
+		_handlers = append(_handlers, v.(func(error, *Context, Next)))
 	}
 
-	for i := 1; i < len(argus); i++ {
-		_fb := argus[i]
-		_handle.handler = append(_handle.handler, _fb.(func(error, *Context, Next)))
-	}
-
-	app.handles = append(app.handles, _handle)
+	app.appendRouter(USE, _url, _handlers)
 }
 
 func (app *Application) appendRouter(method string, path string, cbs []Handler) error {
-	for _, handle := range app.handles {
-		if handle.url == path && handle.method == method {
-			return errors.New("router is exist")
+	_sarr := strings.Split(path, "/")
+
+	for _, v := range cbs {
+		_handle := Handle{
+			url:     path,
+			length:  len(_sarr),
+			method:  strings.ToLower(method),
+			handler: v,
 		}
+
+		app.handles = append(app.handles, _handle)
 	}
-
-	_handle := Handle{
-		url:     path,
-		method:  method,
-		handler: make([]Handler, 0, 8),
-	}
-
-	_handle.handler = append(_handle.handler, cbs...)
-
-	app.handles = append(app.handles, _handle)
 
 	return nil
 }
 
 // Get func
 func (app *Application) Get(path string, cbFunc ...Handler) error {
-	app.appendRouter("Get", path, cbFunc)
+	app.appendRouter(GET, path, cbFunc)
 	return nil
 }
 
 // Post func
 func (app *Application) Post(path string, cbFunc ...Handler) error {
-	app.appendRouter("Post", path, cbFunc)
+	app.appendRouter(POST, path, cbFunc)
 	return nil
 }
 
 // Delete func
 func (app *Application) Delete(path string, cbFunc ...Handler) error {
-	app.appendRouter("Delete", path, cbFunc)
+	app.appendRouter(DELETE, path, cbFunc)
 	return nil
 }
 
 // Patch func
 func (app *Application) Patch(path string, cbFunc ...Handler) error {
-	app.appendRouter("Patch", path, cbFunc)
+	app.appendRouter(PATCH, path, cbFunc)
 	return nil
 }
 
 // Put func
 func (app *Application) Put(path string, cbFunc ...Handler) error {
-	app.appendRouter("Put", path, cbFunc)
+	app.appendRouter(PUT, path, cbFunc)
 	return nil
 }
 
 // Options func
 func (app *Application) Options(path string, cbFunc ...Handler) error {
-	app.appendRouter("Options", path, cbFunc)
+	app.appendRouter(OPTIONS, path, cbFunc)
 	return nil
 }
 
 // Head func
 func (app *Application) Head(path string, cbFunc ...Handler) error {
-	app.appendRouter("Head", path, cbFunc)
+	app.appendRouter(HEAD, path, cbFunc)
 	return nil
 }
 
 // Run func
 func (app *Application) Run(port int) error {
+	app._cb = compose(app.handles)
 	addr := fmt.Sprintf(":%d", port)
 	return http.ListenAndServe(addr, app)
 }
 
 // RunTLS func
 func (app *Application) RunTLS(port int, certFile string, keyFile string) error {
+	app._cb = compose(app.handles)
 	addr := fmt.Sprintf(":%d", port)
 	return http.ListenAndServeTLS(addr, certFile, keyFile, app)
 }
@@ -138,25 +146,8 @@ func (app *Application) RunTLS(port int, certFile string, keyFile string) error 
 // ServeHTTP interface func
 func (app *Application) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	ctx := NewContext(w, req)
-	fmt.Println(ctx.Url)
-	// ctx.data["session"] = make(map[string]interface{})
+	app._cb(nil, ctx, nil)
 
-	// var routerHandler []Handler
-	// for _, middleware := range app.middlewares {
-	// 	if ok := compare(middleware.path, ctx.Path, false); ok {
-	// 		routerHandler = append(routerHandler, middleware.handler)
-	// 	}
-	// }
-
-	// for _, router := range app.route[ctx.Method] {
-	// 	if ok := compare(router.path, ctx.Path, true); ok {
-	// 		ctx.RequestNotFound = false
-	// 		ctx.MatchURL = router.path
-	// 		ctx.Params = formatParams(router.path, ctx.Path)
-	// 		routerHandler = append(routerHandler, router.handler...)
-	// 	}
-	// }
-
-	// fb := compose(ctx, routerHandler)
-	// fb(err)
+	ctx.Res.WriteHeader(ctx.Status)
+	ctx.Res.Write(ctx.body)
 }

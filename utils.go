@@ -23,8 +23,8 @@ func Bytes2String(bs []uint8) string {
 }
 
 // compare path middleware prefix, target request path
-func compare(path string, target string, isRouter bool) bool {
-	if len(path) == 0 || path == "/" {
+func compare(path string, target string) bool {
+	if len(path) == 0 || path == "*" {
 		return true
 	}
 
@@ -34,10 +34,6 @@ func compare(path string, target string, isRouter bool) bool {
 	targetLen := len(targetArr)
 
 	if pathLen > targetLen {
-		return false
-	}
-
-	if isRouter && pathLen != targetLen {
 		return false
 	}
 
@@ -57,25 +53,31 @@ func compare(path string, target string, isRouter bool) bool {
 	return true
 }
 
-func compose(ctx *Context, handlers []Handler) func(error) {
-	currentPoint := int32(0)
-	var next func(err error)
-	var cbMax = len(handlers)
+func compose(handles []Handle) Handler {
+	return func(err error, ctx *Context, n Next) {
+		_curr := int32(0)
+		_max := len(handles)
+		var _next func(err error)
 
-	next = func(err error) {
-		_ctx := ctx
-		_router := handlers
-		bFound := false
+		_next = func(err error) {
+			_ctx := ctx
+			_handles := handles
 
-		for int(currentPoint) < cbMax && bFound == false {
-			bFound = true
-			currRouterHandler := _router[currentPoint]
-			atomic.AddInt32(&currentPoint, 1)
-			currRouterHandler(err, _ctx, next)
+			if int(_curr) < _max {
+				_currHandler := _handles[_curr]
+				atomic.AddInt32(&_curr, 1)
+				if (_currHandler.method == USE || _currHandler.method == ctx.Method) &&
+					compare(_currHandler.url, ctx.Url) {
+					ctx.MatchURL = _currHandler.url
+					ctx.Params = formatParams(_currHandler.url, ctx.Url)
+					_currHandler.handler(err, _ctx, _next)
+				} else {
+					_next(err)
+				}
+			}
 		}
+		_next(nil)
 	}
-
-	return next
 }
 
 func formatQuery(values map[string]([]string)) map[string]([]string) {
