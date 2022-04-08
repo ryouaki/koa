@@ -10,7 +10,6 @@ import (
 	"runtime"
 	"strconv"
 	"strings"
-	"sync/atomic"
 )
 
 // compare path middleware prefix, target request path
@@ -58,7 +57,7 @@ func compose(handles []Handle) Handler {
 
 			if int(_curr) < _max {
 				_currHandler := _handles[_curr]
-				atomic.AddInt32(&_curr, 1)
+				_curr += 1
 				if (_currHandler.method == USE || _currHandler.method == ctx.Method) &&
 					compare(_currHandler.url, ctx.Url) {
 					ctx.Params = formatParams(_currHandler.url, ctx.Url)
