@@ -8,18 +8,17 @@ import (
 
 // Context Request
 type Context struct {
-	Res      http.ResponseWriter    // instance for response
-	Req      *http.Request          // instance for request
-	Url      string                 // Url for request
-	Path     string                 // Path for request
-	Method   string                 // Method for request
-	Status   int                    // Status for response
-	MatchURL string                 // Url for callback api
-	Body     []uint8                // Body from request
-	Query    map[string]([]string)  // Query from request
-	Params   map[string](string)    // Params from request
-	data     map[string]interface{} // cache for context
-	body     []byte                 // body for response
+	Res    http.ResponseWriter    // instance for response
+	Req    *http.Request          // instance for request
+	Url    string                 // Url for request
+	Path   string                 // Path for request
+	Method string                 // Method for request
+	Status int                    // Status for response
+	Body   []uint8                // Body from request
+	Query  map[string]([]string)  // Query from request
+	Params map[string](string)    // Params from request
+	data   map[string]interface{} // cache for context
+	body   []byte                 // body for response
 }
 
 // New a context for request

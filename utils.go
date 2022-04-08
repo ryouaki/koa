@@ -61,7 +61,6 @@ func compose(handles []Handle) Handler {
 				atomic.AddInt32(&_curr, 1)
 				if (_currHandler.method == USE || _currHandler.method == ctx.Method) &&
 					compare(_currHandler.url, ctx.Url) {
-					ctx.MatchURL = _currHandler.url
 					ctx.Params = formatParams(_currHandler.url, ctx.Url)
 					_currHandler.handler(err, _ctx, _next)
 				} else {

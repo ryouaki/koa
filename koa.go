@@ -15,7 +15,6 @@ type Application struct {
 
 type Handle struct {
 	url     string
-	length  int
 	method  string
 	handler Handler
 }
@@ -71,12 +70,9 @@ func (app *Application) Use(argus ...interface{}) {
 }
 
 func (app *Application) appendRouter(method string, path string, cbs []Handler) error {
-	_sarr := strings.Split(path, "/")
-
 	for _, v := range cbs {
 		_handle := Handle{
 			url:     path,
-			length:  len(_sarr),
 			method:  strings.ToLower(method),
 			handler: v,
 		}
