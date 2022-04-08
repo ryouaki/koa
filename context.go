@@ -8,7 +8,6 @@ import (
 
 // Context Request
 type Context struct {
-	headers  map[string]([]string)  // headers for response
 	Res      http.ResponseWriter    // instance for response
 	Req      *http.Request          // instance for request
 	Url      string                 // Url for request
@@ -32,23 +31,22 @@ func NewContext(res http.ResponseWriter, req *http.Request) *Context {
 	}
 
 	return &Context{
-		headers: req.Header,
-		Res:     res,
-		Req:     req,
-		Url:     req.RequestURI,
-		Path:    req.URL.Path,
-		Method:  strings.ToLower(req.Method),
-		Status:  200,
-		Body:    body,
-		Query:   formatQuery(req.URL.Query()),
-		data:    make(map[string]interface{}),
-		body:    nil,
+		Res:    res,
+		Req:    req,
+		Url:    req.RequestURI,
+		Path:   req.URL.Path,
+		Method: strings.ToLower(req.Method),
+		Status: 200,
+		Body:   body,
+		Query:  formatQuery(req.URL.Query()),
+		data:   make(map[string]interface{}),
+		body:   nil,
 	}
 }
 
 // Get Header from request func
 func (ctx *Context) GetHeader(key string) []string {
-	if data, ok := ctx.headers[key]; ok {
+	if data, ok := ctx.Req.Header[key]; ok {
 		return data
 	}
 	return nil
