@@ -1,15 +1,14 @@
 package main
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 
-	"github.com/go-redis/redis"
 	"github.com/ryouaki/koa"
 	"github.com/ryouaki/koa/catch"
 	"github.com/ryouaki/koa/example/plugin"
 	"github.com/ryouaki/koa/log"
-	"github.com/ryouaki/koa/session"
 	"github.com/ryouaki/koa/static"
 )
 
@@ -43,37 +42,67 @@ func main() {
 		LogPath: "./../logs",
 	})
 	app.Use(plugin.Duration)
-	rds := redis.NewUniversalClient(&redis.UniversalOptions{
-		Addrs: []string{"42.192.194.38:6001"},
-	})
+	// rds := redis.NewUniversalClient(&redis.UniversalOptions{
+	// 	Addrs: []string{"42.192.194.38:6001"},
+	// })
 
-	store := session.NewRedisStore(rds)
-	app.Use(session.Session(&session.Config{
-		Store:  store,
-		MaxAge: 100,
-	}))
+	// // store := session.NewRedisStore(rds)
+	// // app.Use(session.Session(&session.Config{
+	// // 	Store:  store,
+	// // 	MaxAge: 100,
+	// // }))
 
-	// store := session.NewMemStore()
-	// app.Use(session.Session(&session.Config{
-	// 	Store:  store,
-	// 	MaxAge: 1000,
-	// }))
+	// // store := session.NewMemStore()
+	// // app.Use(session.Session(&session.Config{
+	// // 	Store:  store,
+	// // 	MaxAge: 1000,
+	// // }))
 	app.Use(static.Static("./static", "/static/"))
-	app.Use("/a", func(err error, ctx *koa.Context, next koa.NextCb) {
-		ctx.SetSession("test", "kkkk")
+	app.Use(func(err error, ctx *koa.Context, next koa.Next) {
+		fmt.Println("b-use1")
+		next(nil)
+		fmt.Println("b-us2e")
+	})
+	app.Use("/a", func(err error, ctx *koa.Context, next koa.Next) {
+		fmt.Println("a")
 		next(nil)
 	})
-	app.Get("/b", func(err error, ctx *koa.Context, next koa.NextCb) {
-		ctx.Write([]byte("hello"))
+	app.Get("/b", func(err error, ctx *koa.Context, next koa.Next) {
+		fmt.Println("b1")
+		ctx.SetBody([]byte("Hello world"))
+		fmt.Println("b2")
 	})
-	app.Get("/c", func(err error, ctx *koa.Context, next koa.NextCb) {
-		data := ctx.GetSession()
-		if data["test"] == nil {
-			data["test"] = "nil"
-		}
-		ctx.Write([]byte(data["test"].(string)))
+	app.Get("/c", func(err error, ctx *koa.Context, next koa.Next) {
+		ctx.Status = 500
+		fmt.Println("c")
+		// next(nil)
 	})
 
+	app.Get("/d", func(err error, ctx *koa.Context, next koa.Next) {
+		fmt.Println("d1")
+		next(nil)
+	}, func(err error, ctx *koa.Context, next koa.Next) {
+		fmt.Println("d2")
+		next(nil)
+	})
+
+	app.Get("/e/:f", func(err error, ctx *koa.Context, next koa.Next) {
+		fmt.Println("c")
+		// next(nil)
+	})
+
+	app.Get("/json", func(err error, ctx *koa.Context, next koa.Next) {
+		ctx.SetHeader("Content-Type", "application/json")
+		data := make(map[string]interface{})
+		data["test"] = "test"
+		ret, _ := json.Marshal(data)
+		ctx.SetBody(ret)
+	})
+
+	app.Use(func(err error, ctx *koa.Context, next koa.Next) {
+		ctx.Status = 404
+		ctx.SetBody([]byte("Request not found"))
+	})
 	err := app.Run(8080)
 	if err != nil {
 		fmt.Println(err)

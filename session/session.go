@@ -129,7 +129,7 @@ type RedisStore struct {
 var sess *KoaSession = nil
 
 // Session func
-func Session(conf *Config) func(error, *koa.Context, koa.NextCb) {
+func Session(conf *Config) func(error, *koa.Context, koa.Next) {
 	addr := koa.GetIPAddr()
 	id := koa.GetGoroutineID()
 	name := "koa_sess_id"
@@ -162,16 +162,16 @@ func Session(conf *Config) func(error, *koa.Context, koa.NextCb) {
 		},
 	}
 
-	return func(err error, ctx *koa.Context, next koa.NextCb) {
+	return func(err error, ctx *koa.Context, next koa.Next) {
 		sessionID := ctx.GetCookie(sess.Name)
 		sessID := fmt.Sprintf("%v%d%s", time.Now().UnixNano()/1e6, koa.GetGoroutineID(), koa.GetMD5ID([]byte(sess.localAddr)))
 		if sessionID != nil {
 			sessID = sessionID.Value
 		}
-		sessionData, err := sess.Store.Get(sessID)
+		beforeSession, _ := sess.Store.Get(sessID)
 
-		if sessionData != nil {
-			ctx.UpdateSession(sessionData)
+		if beforeSession != nil {
+			ctx.SetData("session", beforeSession)
 		} else {
 			cookie := &http.Cookie{}
 			koa.StructAssign(cookie, &sess.Config)
@@ -179,7 +179,12 @@ func Session(conf *Config) func(error, *koa.Context, koa.NextCb) {
 			ctx.SetCookie(cookie)
 		}
 		next(err)
-		sessionData = ctx.GetSession()
-		sess.Store.Save(sessID, sessionData, time.Duration(sess.MaxAge)*time.Second)
+
+		var afterSession map[string]interface{}
+		sessionData := ctx.GetData("session")
+		if sessionData != nil {
+			afterSession = sessionData.(map[string]interface{})
+		}
+		sess.Store.Save(sessID, afterSession, time.Duration(sess.MaxAge)*time.Second)
 	}
 }

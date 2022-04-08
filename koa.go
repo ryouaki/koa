@@ -1,9 +1,7 @@
 package koa
 
 import (
-	"errors"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"reflect"
 	"strings"
@@ -11,184 +9,147 @@ import (
 
 // Application Object
 type Application struct {
-	prefix      string
-	middlewares []MiddlewareHandler
-	route       map[string]([]RouterHandler)
+	handles []Handle
+	_cb     Handler
 }
 
-// MiddlewareHandler struct
-type MiddlewareHandler struct {
-	path    string
+type Handle struct {
+	url     string
+	length  int
+	method  string
 	handler Handler
 }
 
-// RouterHandler struct
-type RouterHandler struct {
-	path    string
-	handler []Handler
-}
-
 // Handler Func
-type Handler func(err error, ctx *Context, next NextCb)
+type Handler func(err error, ctx *Context, n Next)
 
-// NextCb Func
-type NextCb func(err error)
+// Next Func
+type Next func(err error)
 
-// New for a koa instance
+const (
+	GET     = "get"
+	POST    = "post"
+	PUT     = "put"
+	DELETE  = "delete"
+	PATCH   = "patch"
+	OPTIONS = "options"
+	HEAD    = "head"
+	USE     = "use"
+)
+
+// New a Koa instance
 func New() *Application {
 	return &Application{
-		middlewares: make([]MiddlewareHandler, 0, 16),
-		route:       make(map[string]([]RouterHandler)),
+		handles: make([]Handle, 0, 8),
 	}
 }
 
-// Use func
+// Add a middleware for koa application
+/**
+ * params: path<string|option> url for request
+ * params: callback<koa.Handler|option> cb for request
+ * params: callback ...
+ */
 func (app *Application) Use(argus ...interface{}) {
-	if len(argus) <= 0 {
+	if len(argus) == 0 {
 		return
 	}
 
-	var firstArgu string
-
-	var middleware []interface{}
+	_url := ""
+	_cbs := argus
 	if reflect.TypeOf(argus[0]).String() == "string" {
-		firstArgu = reflect.ValueOf(argus[0]).String()
-		middleware = argus[1:]
-	} else {
-		firstArgu = "/"
-		middleware = argus
+		_url = reflect.ValueOf(argus[0]).String()
+		_cbs = argus[1:]
 	}
 
-	for _, fb := range middleware {
-		app.middlewares = append(app.middlewares, MiddlewareHandler{
-			path:    firstArgu,
-			handler: fb.(func(error, *Context, NextCb)),
-		})
-	}
-}
-
-func (app *Application) initRouter(method string) []RouterHandler {
-	if _, ok := app.route[method]; !ok {
-		app.route[method] = make([]RouterHandler, 0, 16)
+	var _handlers []Handler
+	for _, v := range _cbs {
+		_handlers = append(_handlers, v.(func(error, *Context, Next)))
 	}
 
-	return app.route[method]
+	app.appendRouter(USE, _url, _handlers)
 }
 
 func (app *Application) appendRouter(method string, path string, cbs []Handler) error {
-	routers := app.initRouter(method)
+	_sarr := strings.Split(path, "/")
 
-	for _, router := range routers {
-		if router.path == path {
-			return errors.New("Router is exist")
+	for _, v := range cbs {
+		_handle := Handle{
+			url:     path,
+			length:  len(_sarr),
+			method:  strings.ToLower(method),
+			handler: v,
 		}
-	}
 
-	app.route[method] = append(app.route[method], RouterHandler{
-		path:    path,
-		handler: cbs,
-	})
+		app.handles = append(app.handles, _handle)
+	}
 
 	return nil
 }
 
 // Get func
 func (app *Application) Get(path string, cbFunc ...Handler) error {
-	app.appendRouter("get", path, cbFunc)
+	app.appendRouter(GET, path, cbFunc)
 	return nil
 }
 
 // Post func
 func (app *Application) Post(path string, cbFunc ...Handler) error {
-	app.appendRouter("post", path, cbFunc)
+	app.appendRouter(POST, path, cbFunc)
 	return nil
 }
 
 // Delete func
 func (app *Application) Delete(path string, cbFunc ...Handler) error {
-	app.appendRouter("delete", path, cbFunc)
+	app.appendRouter(DELETE, path, cbFunc)
 	return nil
 }
 
 // Patch func
 func (app *Application) Patch(path string, cbFunc ...Handler) error {
-	app.appendRouter("patch", path, cbFunc)
+	app.appendRouter(PATCH, path, cbFunc)
 	return nil
 }
 
 // Put func
 func (app *Application) Put(path string, cbFunc ...Handler) error {
-	app.appendRouter("put", path, cbFunc)
+	app.appendRouter(PUT, path, cbFunc)
 	return nil
 }
 
 // Options func
 func (app *Application) Options(path string, cbFunc ...Handler) error {
-	app.appendRouter("options", path, cbFunc)
+	app.appendRouter(OPTIONS, path, cbFunc)
 	return nil
 }
 
 // Head func
 func (app *Application) Head(path string, cbFunc ...Handler) error {
-	app.appendRouter("head", path, cbFunc)
+	app.appendRouter(HEAD, path, cbFunc)
 	return nil
 }
 
 // Run func
 func (app *Application) Run(port int) error {
+	app._cb = compose(app.handles)
 	addr := fmt.Sprintf(":%d", port)
 	return http.ListenAndServe(addr, app)
 }
 
 // RunTLS func
 func (app *Application) RunTLS(port int, certFile string, keyFile string) error {
+	app._cb = compose(app.handles)
 	addr := fmt.Sprintf(":%d", port)
 	return http.ListenAndServeTLS(addr, certFile, keyFile, app)
 }
 
 // ServeHTTP interface func
 func (app *Application) ServeHTTP(w http.ResponseWriter, req *http.Request) {
-	var err error = nil
-	var body []uint8 = nil
+	ctx := NewContext(w, req)
+	app._cb(nil, ctx, nil)
 
-	method := strings.ToLower(req.Method)
-
-	if req.Body != nil {
-		body, err = ioutil.ReadAll(req.Body)
+	if ctx.Status != http.StatusOK {
+		ctx.Res.WriteHeader(ctx.Status)
 	}
-
-	ctx := &Context{
-		Header:          req.Header,
-		Res:             w,
-		Req:             req,
-		URL:             req.RequestURI,
-		Path:            req.URL.Path,
-		Query:           formatQuery(req.URL.Query()),
-		Body:            body,
-		Method:          method,
-		Status:          200,
-		IsFinish:        false,
-		RequestNotFound: true,
-		data:            make(map[string]interface{}),
-	}
-	ctx.data["session"] = make(map[string]interface{})
-
-	var routerHandler []Handler
-	for _, middleware := range app.middlewares {
-		if ok := compare(middleware.path, ctx.Path, false); ok {
-			routerHandler = append(routerHandler, middleware.handler)
-		}
-	}
-
-	for _, router := range app.route[ctx.Method] {
-		if ok := compare(router.path, ctx.Path, true); ok {
-			ctx.RequestNotFound = false
-			ctx.MatchURL = router.path
-			ctx.Params = formatParams(router.path, ctx.Path)
-			routerHandler = append(routerHandler, router.handler...)
-		}
-	}
-
-	fb := compose(ctx, routerHandler)
-	fb(err)
+	ctx.Res.Write(ctx.body)
 }
