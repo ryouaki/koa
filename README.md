@@ -81,17 +81,17 @@ Koa is a middleware framework, Here is an example of logger middleware with each
 
   // New a context for request
   func NewContext(res http.ResponseWriter, req *http.Request) *Context
-  // Get the information from request's header 
+  // Get Header from request func
   func (ctx *Context) GetHeader(key string) []string 
-  // Set the information to response's header
+  // Set header item for Response func
   func (ctx *Context) SetHeader(key string, value string)
-  // Get the information from request's cookie 
+  // Get cookie from request func
   func (ctx *Context) GetCookie(key string) *http.Cookie
-  // Set the information to response's cookie
+  // Set cookie for response func
   func (ctx *Context) SetCookie(cookie *http.Cookie)
-  // Get the information from context
+  // Set data for context func
   func (ctx *Context) GetData(key string) interface{}
-  // Set the information to context
+  // Get data from contexxt  func
   func (ctx *Context) SetData(key string, value interface{})
   // Set data for response
   func (ctx *Context) SetBody(data []byte)
