@@ -148,6 +148,8 @@ func (app *Application) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	ctx := NewContext(w, req)
 	app._cb(nil, ctx, nil)
 
-	ctx.Res.WriteHeader(ctx.Status)
+	if ctx.Status != http.StatusOK {
+		ctx.Res.WriteHeader(ctx.Status)
+	}
 	ctx.Res.Write(ctx.body)
 }
