@@ -99,6 +99,10 @@ func main() {
 		ctx.SetBody(ret)
 	})
 
+	app.Use(func(err error, ctx *koa.Context, next koa.Next) {
+		ctx.Status = 404
+		ctx.SetBody([]byte("Request not found"))
+	})
 	err := app.Run(8080)
 	if err != nil {
 		fmt.Println(err)
