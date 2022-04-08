@@ -88,7 +88,7 @@ func main() {
 
 	app.Get("/e/:f", func(err error, ctx *koa.Context, next koa.Next) {
 		fmt.Println("c")
-		next(nil)
+		// next(nil)
 	})
 
 	app.Get("/json", func(err error, ctx *koa.Context, next koa.Next) {

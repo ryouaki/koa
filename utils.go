@@ -13,15 +13,6 @@ import (
 	"sync/atomic"
 )
 
-// Bytes2String func
-func Bytes2String(bs []uint8) string {
-	ba := []byte{}
-	for _, b := range bs {
-		ba = append(ba, byte(b))
-	}
-	return string(ba)
-}
-
 // compare path middleware prefix, target request path
 func compare(path string, target string) bool {
 	if len(path) == 0 || path == "*" {
@@ -37,6 +28,8 @@ func compare(path string, target string) bool {
 		return false
 	}
 
+	reg, _ := regexp.Compile("^[a-zA-Z0-9_-]+$")
+
 	for idx, val := range pathArr {
 		if val != targetArr[idx] {
 			if !strings.HasPrefix(val, ":") {
@@ -44,7 +37,7 @@ func compare(path string, target string) bool {
 			}
 
 			variable := strings.TrimPrefix(val, ":")
-			if matched, _ := regexp.MatchString("^[a-zA-Z0-9_-]+$", variable); !matched {
+			if !reg.MatchString(variable) {
 				return false
 			}
 		}
