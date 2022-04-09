@@ -129,7 +129,7 @@ type RedisStore struct {
 var sess *KoaSession = nil
 
 // Session func
-func Session(conf *Config) func(error, *koa.Context, koa.Next) {
+func Session(conf *Config) func(*koa.Context, koa.Next) {
 	addr := koa.GetIPAddr()
 	id := koa.GetGoroutineID()
 	name := "koa_sess_id"
@@ -162,7 +162,7 @@ func Session(conf *Config) func(error, *koa.Context, koa.Next) {
 		},
 	}
 
-	return func(err error, ctx *koa.Context, next koa.Next) {
+	return func(ctx *koa.Context, next koa.Next) {
 		sessionID := ctx.GetCookie(sess.Name)
 		sessID := fmt.Sprintf("%v%d%s", time.Now().UnixNano()/1e6, koa.GetGoroutineID(), koa.GetMD5ID([]byte(sess.localAddr)))
 		if sessionID != nil {
@@ -178,7 +178,7 @@ func Session(conf *Config) func(error, *koa.Context, koa.Next) {
 			cookie.Value = sessID
 			ctx.SetCookie(cookie)
 		}
-		next(err)
+		next()
 
 		var afterSession map[string]interface{}
 		sessionData := ctx.GetData("session")

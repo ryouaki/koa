@@ -46,12 +46,12 @@ func compare(path string, target string) bool {
 }
 
 func compose(handles []Handle) Handler {
-	return func(err error, ctx *Context, n Next) {
+	return func(ctx *Context, n Next) {
 		_curr := int32(0)
 		_max := len(handles)
-		var _next func(err error)
+		var _next func()
 
-		_next = func(err error) {
+		_next = func() {
 			_ctx := ctx
 			_handles := handles
 
@@ -61,13 +61,13 @@ func compose(handles []Handle) Handler {
 				if (_currHandler.method == USE || _currHandler.method == ctx.Method) &&
 					compare(_currHandler.url, ctx.Url) {
 					ctx.Params = formatParams(_currHandler.url, ctx.Url)
-					_currHandler.handler(err, _ctx, _next)
+					_currHandler.handler(_ctx, _next)
 				} else {
-					_next(err)
+					_next()
 				}
 			}
 		}
-		_next(nil)
+		_next()
 	}
 }
 

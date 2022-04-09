@@ -8,9 +8,9 @@ import (
 )
 
 // Duration func
-func Duration(err error, ctx *koa.Context, next koa.Next) {
+func Duration(ctx *koa.Context, next koa.Next) {
 	startTime := time.Now()
-	next(nil)
+	next()
 	d := time.Since(startTime)
 	fmt.Println(time.Date(startTime.Year(),
 		startTime.Month(),

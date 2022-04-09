@@ -20,10 +20,10 @@ type Handle struct {
 }
 
 // Handler Func
-type Handler func(err error, ctx *Context, n Next)
+type Handler func(ctx *Context, n Next)
 
 // Next Func
-type Next func(err error)
+type Next func()
 
 const (
 	GET     = "get"
@@ -63,7 +63,7 @@ func (app *Application) Use(argus ...interface{}) {
 
 	var _handlers []Handler
 	for _, v := range _cbs {
-		_handlers = append(_handlers, v.(func(error, *Context, Next)))
+		_handlers = append(_handlers, v.(func(*Context, Next)))
 	}
 
 	app.appendRouter(USE, _url, _handlers)
@@ -142,7 +142,7 @@ func (app *Application) RunTLS(port int, certFile string, keyFile string) error 
 // ServeHTTP interface func
 func (app *Application) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	ctx := NewContext(w, req)
-	app._cb(nil, ctx, nil)
+	app._cb(ctx, nil)
 
 	if ctx.Status != http.StatusOK {
 		ctx.Res.WriteHeader(ctx.Status)
