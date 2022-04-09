@@ -22,7 +22,7 @@ Koa is not bundled with any middleware.
     app := koa.New() // 初始化服务对象
 
     // 设置api路由，其中var为url传参
-    app.Get("/", func(err error, ctx *koa.Context, next koa.Next) {
+    app.Get("/", func(ctx *koa.Context, next koa.Next) {
       ctx.SetBody([]byte("Hello Koa"))
     })
 
@@ -47,7 +47,7 @@ Koa is a middleware framework, Here is an example of logger middleware with each
   )
 
   // Log out about the duration for request.
-  func Duration(err error, ctx *koa.Context, next koa.Next) {
+  func Duration(ctx *koa.Context, next koa.Next) {
     startTime := time.Now() // 开始计时
     next(nil) // 执行后续操作
     d := time.Now().Sub(startTime) // 计算耗时
@@ -62,6 +62,57 @@ Koa is a middleware framework, Here is an example of logger middleware with each
       "Request cost: ",
       float64(d)/float64(time.Millisecond), "ms")
   }
+```
+
+
+
+
+## Koa Application
+```go
+  type Application struct {
+    handles []Handle
+    _cb     Handler
+  }
+
+  type Handle struct {
+    url     string
+    method  string
+    handler Handler
+  }
+
+  // Handler Func
+  type Handler func(ctx *Context, n Next)
+
+  // Next Func
+  type Next func()
+
+  // New a Koa instance
+  func New() *Application
+  // Add a middleware for koa application
+  /**
+  * params: path<string|option> url for request
+  * params: callback<koa.Handler|option> cb for request
+  * params: callback ...
+  */
+  func (app *Application) Use(argus ...interface{})
+  // Get func
+  func (app *Application) Get(path string, cbFunc ...Handler) error
+  // Post func
+  func (app *Application) Post(path string, cbFunc ...Handler) error
+  // Delete func
+  func (app *Application) Delete(path string, cbFunc ...Handler) error
+  // Patch func
+  func (app *Application) Patch(path string, cbFunc ...Handler) error 
+  // Put func
+  func (app *Application) Put(path string, cbFunc ...Handler) error
+  // Options func
+  func (app *Application) Options(path string, cbFunc ...Handler) error
+  // Head func
+  func (app *Application) Head(path string, cbFunc ...Handler) error
+  // Run func
+  func (app *Application) Run(port int) error 
+  // RunTLS func
+  func (app *Application) RunTLS(port int, certFile string, keyFile string) error 
 ```
 
 ## About Context
