@@ -49,7 +49,7 @@ func compose(handles []Handle) Handler {
 	return func(ctx *Context, n Next) {
 		_curr := int32(0)
 		_max := len(handles)
-		var _next func()
+		var _next Next
 
 		_next = func() {
 			_ctx := ctx
