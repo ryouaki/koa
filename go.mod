@@ -1,4 +1,4 @@
-module github.com/ryouaki/koa/v2
+module github.com/ryouaki/koa
 
 go 1.17
 
