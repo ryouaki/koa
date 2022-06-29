@@ -75,7 +75,7 @@ Koa is a middleware framework, Here is an example of logger middleware with each
   }
 
   type Handle struct {
-    url     string
+    path     string
     method  string
     handler Handler
   }
@@ -90,7 +90,7 @@ Koa is a middleware framework, Here is an example of logger middleware with each
   func New() *Application
   // Add a middleware for koa application
   /**
-  * params: path<string|option> url for request
+  * params: path<string|option> path for request
   * params: callback<koa.Handler|option> cb for request
   * params: callback ...
   */
@@ -126,7 +126,7 @@ Koa is a middleware framework, Here is an example of logger middleware with each
     Status   int                    // Status you want to let client konw for the request
     MatchURL string                 // For the router path
     Body     []uint8                // The body from client
-    Query    map[string]([]string)  // The Query from request's url
+    Query    map[string]([]string)  // The Query from request's path
     Params   map[string](string)    // The Params from request's path
   }
 

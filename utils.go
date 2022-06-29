@@ -59,8 +59,8 @@ func compose(handles []Handle) Handler {
 				_currHandler := _handles[_curr]
 				_curr += 1
 				if (_currHandler.method == USE || _currHandler.method == ctx.Method) &&
-					compare(_currHandler.url, ctx.Url) {
-					ctx.Params = formatParams(_currHandler.url, ctx.Url)
+					compare(_currHandler.path, ctx.Path) {
+					ctx.Params = formatParams(_currHandler.path, ctx.Path)
 					_currHandler.handler(_ctx, _next)
 				} else {
 					_next()
@@ -71,13 +71,15 @@ func compose(handles []Handle) Handler {
 	}
 }
 
-func formatQuery(values map[string]([]string)) map[string]([]string) {
-	result := make(map[string]([]string))
+func formatQuery(values map[string]([]string)) map[string]interface{} {
+	result := make(map[string]interface{})
 	for key, data := range values {
 		if strings.HasSuffix(key, "[]") {
 			key = strings.Replace(key, "[]", "", -1)
+			result[key] = data
+		} else {
+			result[key] = data[0]
 		}
-		result[key] = data
 	}
 	return result
 }

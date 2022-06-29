@@ -14,7 +14,7 @@ type Application struct {
 }
 
 type Handle struct {
-	url     string
+	path    string
 	method  string
 	handler Handler
 }
@@ -45,7 +45,7 @@ func New() *Application {
 
 // Add a middleware for koa application
 /**
- * params: path<string|option> url for request
+ * params: path<string|option> path for request
  * params: callback<koa.Handler|option> cb for request
  * params: callback ...
  */
@@ -72,7 +72,7 @@ func (app *Application) Use(argus ...interface{}) {
 func (app *Application) appendRouter(method string, path string, cbs []Handler) error {
 	for _, v := range cbs {
 		_handle := Handle{
-			url:     path,
+			path:    path,
 			method:  strings.ToLower(method),
 			handler: v,
 		}
