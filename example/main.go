@@ -43,6 +43,8 @@ func main() {
 
 	app.Get("/test", handler1, handler2)
 
+	app.Get("/test1/:a/:c", handler1, handler2)
+
 	app.Run(8080)
 }
 

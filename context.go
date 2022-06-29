@@ -15,7 +15,7 @@ type Context struct {
 	Method string                 // Method for request
 	Status int                    // Status for response
 	Body   []uint8                // Body from request
-	Query  map[string]([]string)  // Query from request
+	Query  map[string]interface{} // Query from request
 	Params map[string](string)    // Params from request
 	data   map[string]interface{} // cache for context
 	body   []byte                 // body for response
