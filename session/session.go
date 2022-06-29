@@ -1,9 +1,12 @@
 package session
 
 import (
+	"crypto/md5"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"reflect"
 	"time"
 
 	"github.com/go-redis/redis"
@@ -130,7 +133,7 @@ var sess *KoaSession = nil
 
 // Session func
 func Session(conf *Config) func(*koa.Context, koa.Next) {
-	addr := koa.GetIPAddr()
+	addr := koa.GetLocalAddrIp()
 	id := koa.GetGoroutineID()
 	name := "koa_sess_id"
 	path := "/"
@@ -164,7 +167,7 @@ func Session(conf *Config) func(*koa.Context, koa.Next) {
 
 	return func(ctx *koa.Context, next koa.Next) {
 		sessionID := ctx.GetCookie(sess.Name)
-		sessID := fmt.Sprintf("%v%d%s", time.Now().UnixNano()/1e6, koa.GetGoroutineID(), koa.GetMD5ID([]byte(sess.localAddr)))
+		sessID := fmt.Sprintf("%v%d%s", time.Now().UnixNano()/1e6, koa.GetGoroutineID(), getMD5ID([]byte(sess.localAddr)))
 		if sessionID != nil {
 			sessID = sessionID.Value
 		}
@@ -174,7 +177,7 @@ func Session(conf *Config) func(*koa.Context, koa.Next) {
 			ctx.SetData("session", beforeSession)
 		} else {
 			cookie := &http.Cookie{}
-			koa.StructAssign(cookie, &sess.Config)
+			structAssign(cookie, &sess.Config)
 			cookie.Value = sessID
 			ctx.SetCookie(cookie)
 		}
@@ -186,5 +189,24 @@ func Session(conf *Config) func(*koa.Context, koa.Next) {
 			afterSession = sessionData.(map[string]interface{})
 		}
 		sess.Store.Save(sessID, afterSession, time.Duration(sess.MaxAge)*time.Second)
+	}
+}
+
+// GetMD5ID func
+func getMD5ID(b []byte) string {
+	res := md5.Sum(b)
+	return hex.EncodeToString(res[:])
+}
+
+// StructAssign func
+func structAssign(binding interface{}, value interface{}) {
+	bVal := reflect.ValueOf(binding).Elem()
+	vVal := reflect.ValueOf(value).Elem()
+	vTypeOfT := vVal.Type()
+	for i := 0; i < vVal.NumField(); i++ {
+		name := vTypeOfT.Field(i).Name
+		if ok := bVal.FieldByName(name).IsValid(); ok {
+			bVal.FieldByName(name).Set(reflect.ValueOf(vVal.Field(i).Interface()))
+		}
 	}
 }

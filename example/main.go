@@ -29,6 +29,8 @@ import (
 func main() {
 	app := koa.New()
 
+	fmt.Println(koa.GetIPAddr())
+
 	handler1 := func(ctx *koa.Context, n koa.Next) {
 		fmt.Println("handler1")
 		n()
