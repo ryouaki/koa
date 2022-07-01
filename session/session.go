@@ -21,7 +21,17 @@ type Store interface {
 // KoaSession struct
 type KoaSession struct {
 	Store      Store
-	CookieConf http.Cookie
+	CookieConf SessionConf
+}
+
+type SessionConf struct {
+	Name     string
+	Path     string
+	Domain   string
+	MaxAge   int
+	Secure   bool
+	HttpOnly bool
+	SameSite http.SameSite
 }
 
 // MemStore struct
@@ -118,7 +128,7 @@ func init() {
 }
 
 // Session func
-func Session(conf http.Cookie, store Store) func(*koa.Context, koa.Next) {
+func Session(conf SessionConf, store Store) func(*koa.Context, koa.Next) {
 	name := "koa_sessid"
 	path := "/"
 
@@ -132,18 +142,14 @@ func Session(conf http.Cookie, store Store) func(*koa.Context, koa.Next) {
 
 	sess := &KoaSession{
 		Store: store,
-		CookieConf: http.Cookie{
-			Name:       name,
-			Path:       path,
-			Domain:     conf.Domain,
-			Expires:    conf.Expires,
-			RawExpires: conf.RawExpires,
-			MaxAge:     conf.MaxAge,
-			Secure:     conf.Secure,
-			HttpOnly:   conf.HttpOnly,
-			SameSite:   conf.SameSite,
-			Raw:        conf.Raw,
-			Unparsed:   conf.Unparsed,
+		CookieConf: SessionConf{
+			Name:     name,
+			Path:     path,
+			Domain:   conf.Domain,
+			MaxAge:   conf.MaxAge,
+			Secure:   conf.Secure,
+			HttpOnly: conf.HttpOnly,
+			SameSite: conf.SameSite,
 		},
 	}
 
@@ -155,18 +161,16 @@ func Session(conf http.Cookie, store Store) func(*koa.Context, koa.Next) {
 			sessID = fmt.Sprintf("koa_sess-%04d-%s", koa.GetGoroutineID(), getMd5([]byte(localAddrIp+string(rune(time.Now().Unix())))))
 
 			cookie = &http.Cookie{
-				Name:       sess.CookieConf.Name,
-				Path:       sess.CookieConf.Path,
-				Domain:     sess.CookieConf.Domain,
-				Expires:    sess.CookieConf.Expires,
-				RawExpires: sess.CookieConf.RawExpires,
-				MaxAge:     sess.CookieConf.MaxAge,
-				Secure:     sess.CookieConf.Secure,
-				HttpOnly:   sess.CookieConf.HttpOnly,
-				SameSite:   sess.CookieConf.SameSite,
-				Raw:        sess.CookieConf.Raw,
-				Unparsed:   sess.CookieConf.Unparsed,
-				Value:      sessID,
+				Name:     sess.CookieConf.Name,
+				Path:     sess.CookieConf.Path,
+				Domain:   sess.CookieConf.Domain,
+				Secure:   sess.CookieConf.Secure,
+				HttpOnly: sess.CookieConf.HttpOnly,
+				SameSite: sess.CookieConf.SameSite,
+				Value:    sessID,
+			}
+			if sess.CookieConf.MaxAge > 0 {
+				cookie.Expires = time.Now().Add(time.Duration(sess.CookieConf.MaxAge) * time.Second)
 			}
 			ctx.SetCookie(cookie)
 		} else {
