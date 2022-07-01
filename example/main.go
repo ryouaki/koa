@@ -1,8 +1,6 @@
 package main
 
 import (
-	"net/http"
-
 	"github.com/go-redis/redis"
 	"github.com/ryouaki/koa"
 	"github.com/ryouaki/koa/session"
@@ -35,8 +33,7 @@ func main() {
 		Addrs: []string{"42.192.194.38:6001"},
 	})
 	store := session.NewRedisStore(rds)
-	app.Use(session.Session(http.Cookie{
-		Name:   "",
+	app.Use(session.Session(session.SessionConf{
 		MaxAge: 1000,
 	}, store))
 
