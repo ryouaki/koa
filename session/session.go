@@ -6,35 +6,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"reflect"
 	"time"
 
 	"github.com/go-redis/redis"
 	"github.com/ryouaki/koa"
 )
-
-// Config struct
-type Config struct {
-	Name       string
-	Store      Store
-	Path       string    // optional
-	Domain     string    // optional
-	Expires    time.Time // optional
-	RawExpires string    // for reading cookies only
-	MaxAge     int
-	Secure     bool
-	HttpOnly   bool
-	SameSite   http.SameSite
-	Raw        string
-	Unparsed   []string // Raw text of unparsed attribute-value pairs
-}
-
-// KoaSession struct
-type KoaSession struct {
-	localAddr string
-	id        uint64
-	Config
-}
 
 // Store interface
 type Store interface {
@@ -42,9 +18,20 @@ type Store interface {
 	Get(key string) (map[string]interface{}, error)
 }
 
+// KoaSession struct
+type KoaSession struct {
+	Store      Store
+	CookieConf http.Cookie
+}
+
 // MemStore struct
 type MemStore struct {
 	data map[string]interface{}
+}
+
+// RedisStore struct
+type RedisStore struct {
+	redisClient redis.UniversalClient
 }
 
 // MemInfo struct
@@ -61,7 +48,7 @@ func NewMemStore() *MemStore {
 }
 
 // Get func
-func (store *MemStore) Get(key string) (map[string]interface{}, error) {
+func (store MemStore) Get(key string) (map[string]interface{}, error) {
 	if v, ok := store.data[key]; ok {
 		data := v.(*MemInfo)
 		if data.time.Before(time.Now()) {
@@ -73,7 +60,7 @@ func (store *MemStore) Get(key string) (map[string]interface{}, error) {
 }
 
 // Save func
-func (store *MemStore) Save(key string, value map[string]interface{}, second time.Duration) error {
+func (store MemStore) Save(key string, value map[string]interface{}, second time.Duration) error {
 	if value != nil {
 		store.data[key] = &MemInfo{
 			value: value,
@@ -84,7 +71,7 @@ func (store *MemStore) Save(key string, value map[string]interface{}, second tim
 }
 
 // Get func
-func (store *RedisStore) Get(key string) (map[string]interface{}, error) {
+func (store RedisStore) Get(key string) (map[string]interface{}, error) {
 	cmd := store.redisClient.Get(key)
 	if cmd.Err() != nil {
 		return nil, cmd.Err()
@@ -97,7 +84,7 @@ func (store *RedisStore) Get(key string) (map[string]interface{}, error) {
 
 	value := make(map[string]interface{})
 
-	json.Unmarshal(b, &value)
+	err = json.Unmarshal(b, &value)
 	if err != nil {
 		return nil, err
 	}
@@ -105,7 +92,7 @@ func (store *RedisStore) Get(key string) (map[string]interface{}, error) {
 }
 
 // Save func
-func (store *RedisStore) Save(key string, value map[string]interface{}, second time.Duration) error {
+func (store RedisStore) Save(key string, value map[string]interface{}, second time.Duration) error {
 	if value == nil {
 		return nil
 	}
@@ -124,18 +111,15 @@ func NewRedisStore(rds redis.UniversalClient) *RedisStore {
 	}
 }
 
-// RedisStore struct
-type RedisStore struct {
-	redisClient redis.UniversalClient
+var localAddrIp = ""
+
+func init() {
+	localAddrIp = koa.GetLocalAddrIp()
 }
 
-var sess *KoaSession = nil
-
 // Session func
-func Session(conf *Config) func(*koa.Context, koa.Next) {
-	addr := koa.GetLocalAddrIp()
-	id := koa.GetGoroutineID()
-	name := "koa_sess_id"
+func Session(conf http.Cookie, store Store) func(*koa.Context, koa.Next) {
+	name := "koa_sessid"
 	path := "/"
 
 	if conf.Name != "" {
@@ -146,11 +130,9 @@ func Session(conf *Config) func(*koa.Context, koa.Next) {
 		path = conf.Path
 	}
 
-	sess = &KoaSession{
-		localAddr: addr,
-		id:        id,
-		Config: Config{
-			Store:      conf.Store,
+	sess := &KoaSession{
+		Store: store,
+		CookieConf: http.Cookie{
 			Name:       name,
 			Path:       path,
 			Domain:     conf.Domain,
@@ -166,47 +148,49 @@ func Session(conf *Config) func(*koa.Context, koa.Next) {
 	}
 
 	return func(ctx *koa.Context, next koa.Next) {
-		sessionID := ctx.GetCookie(sess.Name)
-		sessID := fmt.Sprintf("%v%d%s", time.Now().UnixNano()/1e6, koa.GetGoroutineID(), getMD5ID([]byte(sess.localAddr)))
-		if sessionID != nil {
-			sessID = sessionID.Value
-		}
-		beforeSession, _ := sess.Store.Get(sessID)
+		cookie := ctx.GetCookie(sess.CookieConf.Name)
+		beforeSession := make(map[string]interface{}, 0)
+		var sessID string
+		if cookie == nil {
+			sessID = fmt.Sprintf("koa_sess-%04d-%s", koa.GetGoroutineID(), getMd5([]byte(localAddrIp+string(rune(time.Now().Unix())))))
 
-		if beforeSession != nil {
-			ctx.SetData("session", beforeSession)
-		} else {
-			cookie := &http.Cookie{}
-			structAssign(cookie, &sess.Config)
-			cookie.Value = sessID
+			cookie = &http.Cookie{
+				Name:       sess.CookieConf.Name,
+				Path:       sess.CookieConf.Path,
+				Domain:     sess.CookieConf.Domain,
+				Expires:    sess.CookieConf.Expires,
+				RawExpires: sess.CookieConf.RawExpires,
+				MaxAge:     sess.CookieConf.MaxAge,
+				Secure:     sess.CookieConf.Secure,
+				HttpOnly:   sess.CookieConf.HttpOnly,
+				SameSite:   sess.CookieConf.SameSite,
+				Raw:        sess.CookieConf.Raw,
+				Unparsed:   sess.CookieConf.Unparsed,
+				Value:      sessID,
+			}
 			ctx.SetCookie(cookie)
+		} else {
+			sessID = cookie.Value
+			session, err := sess.Store.Get(sessID)
+			if err == nil && session != nil {
+				beforeSession = session
+			}
 		}
+
+		ctx.SetData("session", beforeSession)
+
 		next()
 
-		var afterSession map[string]interface{}
-		sessionData := ctx.GetData("session")
-		if sessionData != nil {
-			afterSession = sessionData.(map[string]interface{})
+		afterSession := ctx.GetData("session")
+		if afterSession == nil {
+			afterSession = make(map[string]interface{}, 0)
 		}
-		sess.Store.Save(sessID, afterSession, time.Duration(sess.MaxAge)*time.Second)
+		sess.Store.Save(sessID, afterSession.(map[string]interface{}), time.Duration(sess.CookieConf.MaxAge)*time.Second)
 	}
 }
 
 // GetMD5ID func
-func getMD5ID(b []byte) string {
+func getMd5(b []byte) string {
 	res := md5.Sum(b)
 	return hex.EncodeToString(res[:])
-}
-
-// StructAssign func
-func structAssign(binding interface{}, value interface{}) {
-	bVal := reflect.ValueOf(binding).Elem()
-	vVal := reflect.ValueOf(value).Elem()
-	vTypeOfT := vVal.Type()
-	for i := 0; i < vVal.NumField(); i++ {
-		name := vTypeOfT.Field(i).Name
-		if ok := bVal.FieldByName(name).IsValid(); ok {
-			bVal.FieldByName(name).Set(reflect.ValueOf(vVal.Field(i).Interface()))
-		}
-	}
 }

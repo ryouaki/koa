@@ -150,6 +150,5 @@ Koa is a middleware framework, Here is an example of logger middleware with each
 
 ## Components
 - [github.com/ryouaki/koa/log](https://github.com/ryouaki/koa/blob/main/log/log.md) Logger plugin
-- [github.com/ryouaki/koa/catch](https://github.com/ryouaki/koa/blob/main/catch/catch.md) A library for catch exception like try - then - catch - finally
 - [github.com/ryouaki/koa/session](https://github.com/ryouaki/koa/blob/main/session/session.md) The middleware for session. support two way to save data - memory and redis base on go-redis
 - [github.com/ryouaki/koa/static](https://github.com/ryouaki/koa/blob/main/static/static.md) The middleware for Static.

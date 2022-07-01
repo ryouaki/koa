@@ -1,9 +1,11 @@
 package main
 
 import (
-	"fmt"
+	"net/http"
 
+	"github.com/go-redis/redis"
 	"github.com/ryouaki/koa"
+	"github.com/ryouaki/koa/session"
 )
 
 // func init() {
@@ -29,23 +31,21 @@ import (
 func main() {
 	app := koa.New()
 
-	fmt.Println(koa.GetIPAddr())
+	rds := redis.NewUniversalClient(&redis.UniversalOptions{
+		Addrs: []string{"42.192.194.38:6001"},
+	})
+	store := session.NewRedisStore(rds)
+	app.Use(session.Session(http.Cookie{
+		Name:   "",
+		MaxAge: 1000,
+	}, store))
 
-	handler1 := func(ctx *koa.Context, n koa.Next) {
-		fmt.Println("handler1")
-		n()
-		fmt.Println("handler1")
-	}
-
-	handler2 := func(ctx *koa.Context, n koa.Next) {
-		fmt.Println("handler2")
-		ctx.SetBody([]byte("Hello world"))
-		fmt.Println("handler2")
-	}
-
-	app.Get("/test", handler1, handler2)
-
-	app.Get("/test1/:a/:c", handler1, handler2)
+	app.Get("/", func(ctx *koa.Context, next koa.Next) {
+		sess := ctx.GetData("session")
+		_sess := sess.(map[string]interface{})
+		_sess["data"] = "hello world"
+		ctx.SetData("session", _sess)
+	})
 
 	app.Run(8080)
 }
