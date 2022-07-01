@@ -2,10 +2,7 @@ package koa
 
 import (
 	"bytes"
-	"crypto/md5"
-	"encoding/hex"
 	"net"
-	"reflect"
 	"regexp"
 	"runtime"
 	"strconv"
@@ -99,8 +96,8 @@ func formatParams(path string, target string) map[string]string {
 	return result
 }
 
-// GetIPAddr func
-func GetIPAddr() string {
+// GetLocalAddrIp func
+func GetLocalAddrIp() string {
 	ret := ""
 
 	addrs, err := net.InterfaceAddrs()
@@ -125,23 +122,4 @@ func GetGoroutineID() uint64 {
 	b = b[:bytes.IndexByte(b, ' ')]
 	n, _ := strconv.ParseUint(string(b), 10, 64)
 	return n
-}
-
-// GetMD5ID func
-func GetMD5ID(b []byte) string {
-	res := md5.Sum(b)
-	return hex.EncodeToString(res[:])
-}
-
-// StructAssign func
-func StructAssign(binding interface{}, value interface{}) {
-	bVal := reflect.ValueOf(binding).Elem()
-	vVal := reflect.ValueOf(value).Elem()
-	vTypeOfT := vVal.Type()
-	for i := 0; i < vVal.NumField(); i++ {
-		name := vTypeOfT.Field(i).Name
-		if ok := bVal.FieldByName(name).IsValid(); ok {
-			bVal.FieldByName(name).Set(reflect.ValueOf(vVal.Field(i).Interface()))
-		}
-	}
 }
