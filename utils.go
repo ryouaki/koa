@@ -3,7 +3,6 @@ package koa
 import (
 	"bytes"
 	"net"
-	"regexp"
 	"runtime"
 	"strconv"
 	"strings"
@@ -24,16 +23,9 @@ func compare(path string, target string) bool {
 		return false
 	}
 
-	reg, _ := regexp.Compile("^[a-zA-Z0-9_-]+$")
-
 	for idx, val := range pathArr {
 		if val != targetArr[idx] {
 			if !strings.HasPrefix(val, ":") {
-				return false
-			}
-
-			variable := strings.TrimPrefix(val, ":")
-			if !reg.MatchString(variable) {
 				return false
 			}
 		}
@@ -87,6 +79,9 @@ func formatParams(path string, target string) map[string]string {
 	targetArr := strings.Split(target, "/")
 
 	for idx, val := range pathArr {
+		if !strings.HasPrefix(val, ":") {
+			continue
+		}
 		if val != targetArr[idx] {
 			variable := strings.TrimPrefix(val, ":")
 			result[variable] = targetArr[idx]
