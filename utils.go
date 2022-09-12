@@ -10,7 +10,7 @@ import (
 
 // compare path middleware prefix, target request path
 func compare(path string, target string) bool {
-	if len(path) == 0 || path == "*" {
+	if len(path) == 0 || path == "*" || path == "/*" {
 		return true
 	}
 
@@ -19,19 +19,42 @@ func compare(path string, target string) bool {
 	pathLen := len(pathArr)
 	targetLen := len(targetArr)
 
-	if pathLen > targetLen {
-		return false
-	}
-
-	for idx, val := range pathArr {
-		if val != targetArr[idx] {
-			if !strings.HasPrefix(val, ":") {
-				return false
+	if pathLen <= targetLen {
+		for i, val := range pathArr {
+			if val == "*" {
+				return true
+			} else if val != targetArr[i] {
+				if strings.HasPrefix(val, ":") {
+					continue
+				} else {
+					return false
+				}
 			}
+		}
+		if pathLen == targetLen {
+			return true
 		}
 	}
 
-	return true
+	// if pathLen > targetLen {
+	// 	return false
+	// } else if pathLen <= targetLen && pathArr[pathLen-1] == "*" {
+	// 	for i := 0; i < pathLen-1; i++ {
+	// 		if pathArr[i] != targetArr[i] {
+	// 			return false
+	// 		}
+	// 	}
+	// } else if pathLen == targetLen {
+	// 	for idx, val := range pathArr {
+	// 		if val != targetArr[idx] {
+	// 			if !strings.HasPrefix(val, ":") {
+	// 				return false
+	// 			}
+	// 		}
+	// 	}
+	// }
+
+	return false
 }
 
 func compose(handles []Handle) Handler {
@@ -54,6 +77,8 @@ func compose(handles []Handle) Handler {
 				} else {
 					_next()
 				}
+			} else {
+				ctx.Status = 404
 			}
 		}
 		_next()
