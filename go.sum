@@ -1,2 +1,4 @@
 github.com/go-redis/redis v6.15.9+incompatible h1:K0pv1D7EQUjfyoMql+r/jZqCLizCGKFlFgcHWWmHQjg=
 github.com/go-redis/redis v6.15.9+incompatible/go.mod h1:NAIEuMOZ/fxfXJIrKDQDz8wamY7mA7PouImQ2Jvg6kA=
+github.com/issue9/assert v1.5.0 h1:9N71cQh6lt9/3y/WnB2lP0AuCxnTwunTToajoWnVD8M=
+github.com/issue9/assert v1.5.0/go.mod h1:Yktk83hAVl1SPSYtd9kjhBizuiBIqUQyj+D5SE2yjVY=
