@@ -29,7 +29,7 @@ type Application struct {
 
 // 中间件结构
 type Handle struct {
-  url     string // 注册的url，无论是中间件还是路由，都可以设置地址
+  path     string // 注册的url，无论是中间件还是路由，都可以设置地址
   method  string // 方法，中间件默认为 use
   handler Handler // 响应体函数
 }
@@ -69,8 +69,8 @@ func compose(handles []Handle) Handler {
         _currHandler := _handles[_curr] // 取出当前需要处理的中间件或者路由
         _curr += 1 // 堆栈前移，在下一次回调处理下一个
         if (_currHandler.method == USE || _currHandler.method == ctx.Method) &&
-          compare(_currHandler.url, ctx.Url) { // 中间件和方法都需要执行handler，但是url为”*”或者””的必须执行
-          ctx.Params = formatParams(_currHandler.url, ctx.Url) // 处理URL传参
+          compare(_currHandler.path, ctx.Path) { // 中间件和方法都需要执行handler，但是url为”*”或者””的必须执行
+          ctx.Params = formatParams(_currHandler.path, ctx.Path) // 处理URL传参
           _currHandler.handler(_ctx, _next) // 执行匹配的中间件或者路由
         } else {
           _next() // 如果没有匹配的中间件或者路由则进行下一次自调用

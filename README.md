@@ -5,6 +5,17 @@ Expressive HTTP middleware framework for Golang to make web applications and API
 
 Koa is not bundled with any middleware.
 
+## Benchmarks
+ryouaki/koa has the best performance:
+
+| name | qps | transactions/s |
+|--|--|--|
+|koa(golang) | 12598080 | 42014.05 |
+|gin | 11936723 | 39812.96 |
+|echo | 12347680 | 41179.66	 |
+|beego | 11051408 | 36856.09 |
+|koa(nodejs) | 8042021 | 26818.72	 |
+
 ## Installation
 ```go
   $ go get github.com/ryouaki/koa
@@ -77,7 +88,7 @@ Koa is a middleware framework, Here is an example of logger middleware with each
   }
 
   type Handle struct {
-    url     string
+    path     string
     method  string
     handler Handler
   }
@@ -92,7 +103,7 @@ Koa is a middleware framework, Here is an example of logger middleware with each
   func New() *Application
   // Add a middleware for koa application
   /**
-  * params: path<string|option> url for request
+  * params: path<string|option> path for request
   * params: callback<koa.Handler|option> cb for request
   * params: callback ...
   */
@@ -128,7 +139,7 @@ Koa is a middleware framework, Here is an example of logger middleware with each
     Status   int                    // Status you want to let client konw for the request
     MatchURL string                 // For the router path
     Body     []uint8                // The body from client
-    Query    map[string]([]string)  // The Query from request's url
+    Query    map[string]([]string)  // The Query from request's path
     Params   map[string](string)    // The Params from request's path
   }
 
@@ -152,6 +163,5 @@ Koa is a middleware framework, Here is an example of logger middleware with each
 
 ## Components
 - [github.com/ryouaki/koa/log](https://github.com/ryouaki/koa/blob/main/log/log.md) Logger plugin
-- [github.com/ryouaki/koa/catch](https://github.com/ryouaki/koa/blob/main/catch/catch.md) A library for catch exception like try - then - catch - finally
 - [github.com/ryouaki/koa/session](https://github.com/ryouaki/koa/blob/main/session/session.md) The middleware for session. support two way to save data - memory and redis base on go-redis
 - [github.com/ryouaki/koa/static](https://github.com/ryouaki/koa/blob/main/static/static.md) The middleware for Static.
