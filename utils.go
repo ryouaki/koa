@@ -36,24 +36,6 @@ func compare(path string, target string) bool {
 		}
 	}
 
-	// if pathLen > targetLen {
-	// 	return false
-	// } else if pathLen <= targetLen && pathArr[pathLen-1] == "*" {
-	// 	for i := 0; i < pathLen-1; i++ {
-	// 		if pathArr[i] != targetArr[i] {
-	// 			return false
-	// 		}
-	// 	}
-	// } else if pathLen == targetLen {
-	// 	for idx, val := range pathArr {
-	// 		if val != targetArr[idx] {
-	// 			if !strings.HasPrefix(val, ":") {
-	// 				return false
-	// 			}
-	// 		}
-	// 	}
-	// }
-
 	return false
 }
 
