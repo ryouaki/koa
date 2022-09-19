@@ -1,4 +1,5 @@
 ![](https://www.oscs1024.com/platform/badge/ryouaki/koa.svg)
+![](https://goreportcard.com/badge/github.com/ryouaki/koa)
 
 # koa.go
 Expressive HTTP middleware framework for Golang to make web applications and APIs more enjoyable to write like Koa.js. Koa's middleware stack flows in a stack-like manner, allowing you to perform actions downstream then filter and manipulate the response upstream.
