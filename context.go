@@ -24,6 +24,19 @@ type Context struct {
 // New a context for request
 func NewContext(res http.ResponseWriter, req *http.Request) *Context {
 	var body []uint8 = nil
+	var data = make(map[string]interface{})
+	var status = 200
+
+	// bugfix: for multipart，should parse multipart before read from req.body or multipartform will be nil 2023.05.16 @ryouaki
+	if contentType, ok := req.Header["Content-Type"]; ok {
+		if len(contentType) > 0 && strings.HasPrefix(contentType[0], "multipart") {
+			err := req.ParseMultipartForm(1024 * 16)
+			if err != nil {
+				status = 400
+				data["error"] = err.Error()
+			}
+		}
+	}
 
 	if req.Body != nil {
 		body, _ = ioutil.ReadAll(req.Body)
@@ -35,10 +48,10 @@ func NewContext(res http.ResponseWriter, req *http.Request) *Context {
 		Url:    req.RequestURI,
 		Path:   req.URL.Path,
 		Method: strings.ToLower(req.Method),
-		Status: 200,
+		Status: status,
 		Body:   body,
 		Query:  formatQuery(req.URL.Query()),
-		data:   make(map[string]interface{}),
+		data:   data,
 		body:   nil,
 	}
 }
