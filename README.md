@@ -1,4 +1,5 @@
 ![](https://www.oscs1024.com/platform/badge/ryouaki/koa.svg)
+![Coverage](https://img.shields.io/badge/Coverage-8.9%25-red)
 ![](https://goreportcard.com/badge/github.com/ryouaki/koa)
 
 # koa.go
