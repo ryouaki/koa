@@ -168,3 +168,4 @@ Koa is a middleware framework, Here is an example of logger middleware with each
 - [github.com/ryouaki/koa/log](https://github.com/ryouaki/koa/blob/main/log/log.md) Logger plugin
 - [github.com/ryouaki/koa/session](https://github.com/ryouaki/koa/blob/main/session/session.md) The middleware for session. support two way to save data - memory and redis base on go-redis
 - [github.com/ryouaki/koa/static](https://github.com/ryouaki/koa/blob/main/static/static.md) The middleware for Static.
+- [github.com/ryouaki/koa/env](https://github.com/ryouaki/koa/blob/main/static/env.md) The plugin for env configuration and extends base env.
